@@ -3,18 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>iCast 18 • AirDrop & Screen Cast</title>
+    <title>iCast Hub • Multi-Viewer iOS 18 Broadcast & Sync</title>
     
-    <!-- Tailwind CSS -->
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- PeerJS for WebRTC P2P Video/Screen Streaming -->
+    <!-- PeerJS CDN for WebRTC Media & Data Channels -->
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     
-    <!-- Phosphor Icons for iOS 18 Style Iconography -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
-    <!-- Google Fonts: Inter (SF Pro Fallback) -->
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <script>
@@ -23,19 +25,21 @@
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'Inter', 'sans-serif'],
+                        sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"SF Pro Text"', 'Inter', 'sans-serif'],
                     },
                     colors: {
                         ios: {
-                            blue: '#0A84FF',
-                            green: '#30D158',
-                            red: '#FF453A',
-                            orange: '#FF9F0A',
-                            purple: '#BF5AF2',
-                            cyan: '#64D2FF',
-                            glass: 'rgba(30, 30, 36, 0.55)',
-                            glassLight: 'rgba(255, 255, 255, 0.12)',
-                            border: 'rgba(255, 255, 255, 0.16)'
+                            blue: '#007AFF',
+                            teal: '#30B0C7',
+                            green: '#34C759',
+                            red: '#FF3B30',
+                            orange: '#FF9500',
+                            purple: '#AF52DE',
+                            pink: '#FF2D55',
+                            card: 'rgba(28, 28, 30, 0.68)',
+                            cardLight: 'rgba(44, 44, 46, 0.72)',
+                            pill: 'rgba(255, 255, 255, 0.12)',
+                            border: 'rgba(255, 255, 255, 0.18)'
                         }
                     }
                 }
@@ -46,141 +50,117 @@
     <style>
         * {
             -webkit-tap-highlight-color: transparent;
-            user-select: none;
-        }
-        input, textarea {
-            user-select: text;
+            outline: none;
         }
         body {
             background-color: #000000;
             color: #ffffff;
-            overflow-x: hidden;
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
+            overflow-x: hidden;
+            touch-action: manipulation;
         }
 
-        /* iOS 18 Animated Mesh Wallpaper */
+        /* iOS 18 Mesh Fluid Gradient Wallpaper */
         .ios-wallpaper {
             position: fixed;
             inset: 0;
             z-index: -1;
-            background: radial-gradient(circle at 15% 20%, rgba(10, 132, 255, 0.38) 0%, transparent 45%),
-                        radial-gradient(circle at 85% 25%, rgba(191, 90, 242, 0.35) 0%, transparent 50%),
-                        radial-gradient(circle at 50% 85%, rgba(48, 209, 88, 0.25) 0%, transparent 55%),
-                        radial-gradient(circle at 20% 75%, rgba(255, 55, 95, 0.25) 0%, transparent 45%),
-                        #050508;
-            filter: saturate(130%);
-            animation: wallpaperPulse 16s ease-in-out infinite alternate;
+            background: 
+                radial-gradient(circle at 12% 18%, rgba(0, 122, 255, 0.42) 0%, transparent 45%),
+                radial-gradient(circle at 88% 22%, rgba(175, 82, 222, 0.38) 0%, transparent 48%),
+                radial-gradient(circle at 50% 85%, rgba(52, 199, 89, 0.28) 0%, transparent 52%),
+                radial-gradient(circle at 20% 75%, rgba(255, 45, 85, 0.25) 0%, transparent 45%),
+                #070709;
+            filter: saturate(160%);
+            animation: wallpaperShift 24s ease-in-out infinite alternate;
         }
-
-        @keyframes wallpaperPulse {
+        @keyframes wallpaperShift {
             0% { transform: scale(1) rotate(0deg); }
-            50% { transform: scale(1.06) rotate(1deg); }
+            50% { transform: scale(1.08) rotate(1.2deg); }
             100% { transform: scale(1.02) rotate(-1deg); }
         }
 
-        /* iOS 18 Frosted Glassmorphism */
+        /* iOS Glassmorphic Cards */
         .ios-glass {
-            background: rgba(28, 28, 34, 0.58);
-            backdrop-filter: blur(28px) saturate(190%);
-            -webkit-backdrop-filter: blur(28px) saturate(190%);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+            background: rgba(30, 30, 36, 0.66);
+            backdrop-filter: blur(34px) saturate(210%);
+            -webkit-backdrop-filter: blur(34px) saturate(210%);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.22);
         }
 
-        .ios-glass-pill {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.14);
-            transition: all 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+        .ios-pill {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
         }
-        .ios-glass-pill:active {
+        .ios-pill:active {
             transform: scale(0.94);
-            background: rgba(255, 255, 255, 0.18);
         }
 
-        /* Control Center Active Tile */
+        /* Control Center Buttons */
         .cc-tile {
-            background: rgba(255, 255, 255, 0.09);
+            background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
             border: 1px solid rgba(255, 255, 255, 0.12);
-            transition: all 0.3s cubic-bezier(0.32, 0.72, 0, 1);
-        }
-        .cc-tile:hover {
-            background: rgba(255, 255, 255, 0.14);
+            transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
         .cc-tile:active {
-            transform: scale(0.93);
+            transform: scale(0.94);
         }
         .cc-tile.active-blue {
-            background: rgba(10, 132, 255, 0.88);
-            border-color: rgba(255, 255, 255, 0.35);
-            box-shadow: 0 8px 25px rgba(10, 132, 255, 0.45);
+            background: rgba(0, 122, 255, 0.9);
+            box-shadow: 0 10px 30px rgba(0, 122, 255, 0.5);
+            border-color: rgba(255, 255, 255, 0.4);
         }
         .cc-tile.active-green {
-            background: rgba(48, 209, 88, 0.88);
-            border-color: rgba(255, 255, 255, 0.35);
-            box-shadow: 0 8px 25px rgba(48, 209, 88, 0.45);
+            background: rgba(52, 199, 89, 0.9);
+            box-shadow: 0 10px 30px rgba(52, 199, 89, 0.5);
+            border-color: rgba(255, 255, 255, 0.4);
         }
         .cc-tile.active-purple {
-            background: rgba(191, 90, 242, 0.88);
-            border-color: rgba(255, 255, 255, 0.35);
-            box-shadow: 0 8px 25px rgba(191, 90, 242, 0.45);
+            background: rgba(175, 82, 222, 0.9);
+            box-shadow: 0 10px 30px rgba(175, 82, 222, 0.5);
+            border-color: rgba(255, 255, 255, 0.4);
         }
-        .cc-tile.active-red {
-            background: rgba(255, 69, 58, 0.88);
-            border-color: rgba(255, 255, 255, 0.35);
-            box-shadow: 0 8px 25px rgba(255, 69, 58, 0.45);
+        .cc-tile.active-orange {
+            background: rgba(255, 149, 0, 0.9);
+            box-shadow: 0 10px 30px rgba(255, 149, 0, 0.5);
+            border-color: rgba(255, 255, 255, 0.4);
         }
 
-        /* Dynamic Island Bouncy Transition */
+        /* Dynamic Island */
         #dynamic-island {
             background: #000000;
-            border: 1px solid rgba(255, 255, 255, 0.14);
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.75);
-            transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        #dynamic-island:hover {
-            transform: scale(1.03);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85);
+            transition: all 0.4s cubic-bezier(0.34, 1.4, 0.64, 1);
         }
 
-        /* Floating Emoji Reaction Animation */
-        @keyframes floatUpEmoji {
-            0% {
-                opacity: 0;
-                transform: translateY(20px) scale(0.5) rotate(-8deg);
-            }
-            20% {
-                opacity: 1;
-                transform: translateY(-20px) scale(1.25) rotate(6deg);
-            }
-            80% {
-                opacity: 0.9;
-                transform: translateY(-180px) scale(1) rotate(-4deg);
-            }
-            100% {
-                opacity: 0;
-                transform: translateY(-240px) scale(0.8) rotate(8deg);
-            }
+        /* Floating Flying Emojis */
+        @keyframes floatReaction {
+            0% { opacity: 0; transform: translateY(20px) scale(0.6) rotate(-8deg); }
+            15% { opacity: 1; transform: translateY(-10px) scale(1.35) rotate(6deg); }
+            85% { opacity: 0.9; transform: translateY(-240px) scale(1.05) rotate(-6deg); }
+            100% { opacity: 0; transform: translateY(-320px) scale(0.8) rotate(12deg); }
         }
-        .floating-emoji {
+        .flying-emoji {
             position: absolute;
-            bottom: 80px;
+            bottom: 60px;
             pointer-events: none;
-            font-size: 2.25rem;
-            z-index: 50;
-            animation: floatUpEmoji 2.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-            filter: drop-shadow(0 6px 12px rgba(0,0,0,0.4));
+            font-size: 2.8rem;
+            z-index: 60;
+            animation: floatReaction 3s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+            filter: drop-shadow(0 6px 14px rgba(0,0,0,0.6));
         }
 
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
-            width: 5px;
-            height: 5px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
+            width: 4px;
+            height: 4px;
         }
         ::-webkit-scrollbar-thumb {
             background: rgba(255, 255, 255, 0.2);
@@ -188,573 +168,620 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between pb-6 selection:bg-ios-blue selection:text-white">
+<body class="min-h-screen flex flex-col justify-between pb-28 select-none">
 
-    <!-- Animated iOS 18 Mesh Background -->
+    <!-- Wallpaper -->
     <div class="ios-wallpaper"></div>
 
-    <!-- TOP: Dynamic Island Status Bar -->
-    <header class="sticky top-3 z-50 flex flex-col items-center px-4 pointer-events-none">
-        <div id="dynamic-island" onclick="toggleIslandExpand()" class="pointer-events-auto cursor-pointer rounded-full px-4 py-2.5 flex items-center gap-3 min-w-[230px] max-w-[92vw] justify-between">
-            <!-- Left Indicator -->
+    <!-- DYNAMIC ISLAND (Sticky Top Bar) -->
+    <header class="sticky top-2 z-50 flex flex-col items-center px-4 pointer-events-none">
+        <div id="dynamic-island" onclick="toggleIslandDrawer()" class="pointer-events-auto cursor-pointer rounded-full px-4 py-2 sm:py-2.5 flex items-center justify-between gap-3 min-w-[270px] max-w-[94vw]">
             <div class="flex items-center gap-2.5">
-                <span id="island-dot" class="w-2.5 h-2.5 rounded-full bg-ios-blue animate-pulse shadow-[0_0_10px_#0A84FF]"></span>
-                <span id="island-status-text" class="text-xs sm:text-sm font-semibold tracking-tight text-white/95 truncate max-w-[180px] sm:max-w-[260px]">
-                    Initializing AirCast...
+                <span id="island-pulse-dot" class="w-2.5 h-2.5 rounded-full bg-ios-blue animate-pulse shadow-[0_0_12px_#007AFF]"></span>
+                <span id="island-title" class="text-xs sm:text-sm font-semibold tracking-tight text-white/95 truncate max-w-[170px] sm:max-w-[260px]">
+                    iCast Hub • Standby
                 </span>
             </div>
-
-            <!-- Right Waveform / Live Badge -->
-            <div class="flex items-center gap-2">
-                <div id="island-live-badge" class="hidden items-center gap-1 bg-ios-red/20 border border-ios-red/50 text-ios-red text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                    <span class="w-1.5 h-1.5 rounded-full bg-ios-red animate-ping"></span>
-                    LIVE
+            
+            <div class="flex items-center gap-2 shrink-0">
+                <!-- Viewer count pill inside island -->
+                <div class="flex items-center gap-1 bg-white/10 px-2 py-0.5 rounded-full text-[11px] font-semibold text-white/90">
+                    <i data-lucide="users" class="w-3 h-3 text-ios-teal"></i>
+                    <span id="island-viewer-count">1</span>
                 </div>
-                <div class="flex items-end gap-0.5 h-3.5 px-1" id="island-waveform">
-                    <span class="w-0.5 h-1.5 bg-ios-cyan rounded-full animate-pulse"></span>
-                    <span class="w-0.5 h-3 bg-ios-purple rounded-full animate-pulse" style="animation-delay: 150ms"></span>
-                    <span class="w-0.5 h-2 bg-ios-blue rounded-full animate-pulse" style="animation-delay: 300ms"></span>
-                    <span class="w-0.5 h-3.5 bg-ios-green rounded-full animate-pulse" style="animation-delay: 75ms"></span>
+                
+                <!-- Live Broadcast Badge -->
+                <div id="island-live-badge" class="hidden items-center gap-1 bg-ios-red/25 border border-ios-red/50 text-ios-red text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+                    <span class="w-1.5 h-1.5 rounded-full bg-ios-red animate-ping"></span>
+                    ON AIR
                 </div>
             </div>
         </div>
 
-        <!-- Expanded Dynamic Island Drawer -->
-        <div id="island-expanded" class="hidden pointer-events-auto mt-2 w-full max-w-md ios-glass rounded-[28px] p-4 text-xs space-y-2.5 transition-all duration-300">
+        <!-- Dynamic Island Expanded Info Popover -->
+        <div id="island-drawer" class="hidden pointer-events-auto mt-2 w-full max-w-md ios-glass rounded-[30px] p-4 text-xs space-y-3">
             <div class="flex items-center justify-between border-b border-white/10 pb-2">
-                <span class="text-white/60 font-medium">iOS 18 AirCast Engine</span>
-                <span id="net-latency" class="text-ios-green font-mono font-semibold">WebRTC P2P + Sync</span>
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-ios-green"></span>
+                    <span class="font-bold text-white tracking-wide">Multi-Viewer Room Telemetry</span>
+                </div>
+                <span id="role-pill-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-ios-blue/30 text-ios-blue border border-ios-blue/40">
+                    Host Mode
+                </span>
             </div>
             <div class="grid grid-cols-2 gap-2 text-white/80">
                 <div class="bg-white/5 rounded-2xl p-2.5">
-                    <div class="text-[10px] text-white/40 uppercase">My Room Code</div>
-                    <div id="island-my-code" class="text-sm font-bold tracking-widest text-ios-cyan mt-0.5">------</div>
+                    <div class="text-[10px] text-white/45 uppercase tracking-wider">Active Broadcast Code</div>
+                    <div id="drawer-room-code" class="text-base font-extrabold text-ios-teal tracking-widest mt-0.5">------</div>
                 </div>
                 <div class="bg-white/5 rounded-2xl p-2.5">
-                    <div class="text-[10px] text-white/40 uppercase">Connected Room</div>
-                    <div id="island-active-room" class="text-sm font-bold tracking-widest text-ios-green mt-0.5">Standby</div>
+                    <div class="text-[10px] text-white/45 uppercase tracking-wider">Audience Connected</div>
+                    <div id="drawer-audience-count" class="text-base font-extrabold text-ios-green tracking-wider mt-0.5">0 Viewers</div>
                 </div>
             </div>
             <div class="text-[11px] text-white/50 flex items-center justify-between pt-1">
-                <span id="my-uid-display" class="truncate max-w-[260px]">ID: Connecting...</span>
-                <button onclick="openAndroidModal()" class="text-ios-blue hover:underline font-medium">Android Help</button>
+                <span id="peer-session-id" class="truncate max-w-[240px]">Peer Mesh: Connecting...</span>
+                <span class="text-ios-blue font-semibold">WebRTC + Cloud Sync</span>
             </div>
         </div>
     </header>
 
-    <!-- MAIN CONTENT CONTAINER -->
-    <main class="max-w-6xl w-full mx-auto px-3 sm:px-6 mt-4 flex-1 flex flex-col gap-4">
+    <!-- MAIN VIEWPORT CONTAINER -->
+    <main class="max-w-6xl w-full mx-auto px-3 sm:px-6 mt-3 sm:mt-4 flex-1 flex flex-col gap-4">
 
-        <!-- TOP ROW: Room Code Connection Bar & Mode Switcher -->
+        <!-- SECTION 1: Room Code & Quick Join Bar -->
         <section class="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
             
-            <!-- Left Card: Your 6-Char Room Code & Join Input (7 cols) -->
+            <!-- Host Broadcast Code Card (7 Cols) -->
             <div class="lg:col-span-7 ios-glass rounded-[28px] p-4 sm:p-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-                
-                <!-- My Room Code Display -->
                 <div class="flex items-center gap-3.5">
-                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-ios-blue to-ios-purple flex items-center justify-center shadow-lg shadow-ios-blue/30 shrink-0">
-                        <i class="ph-fill ph-broadcast text-2xl text-white"></i>
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-ios-blue via-ios-purple to-ios-pink flex items-center justify-center shadow-lg shadow-ios-blue/30 shrink-0">
+                        <i data-lucide="radio" class="w-6 h-6 text-white"></i>
                     </div>
                     <div>
                         <div class="flex items-center gap-2">
-                            <span class="text-xs uppercase tracking-wider font-semibold text-white/50">Your Cast Code</span>
-                            <span class="text-[10px] bg-white/10 px-2 py-0.5 rounded-full text-white/70">Tap to Copy</span>
+                            <span class="text-[11px] uppercase tracking-wider font-bold text-white/50">Broadcaster Room Code</span>
+                            <span class="text-[10px] bg-white/10 px-2 py-0.5 rounded-full text-white/80">Tap to Copy</span>
                         </div>
                         <div class="flex items-center gap-2 mt-0.5">
-                            <button onclick="copyRoomCode()" id="my-room-code-btn" class="text-2xl sm:text-3xl font-extrabold tracking-[0.18em] text-white hover:text-ios-cyan transition flex items-center gap-2">
-                                <span id="my-room-code">......</span>
-                                <i class="ph ph-copy text-lg text-white/60"></i>
+                            <button onclick="copyHostRoomCode()" class="text-2xl sm:text-3xl font-extrabold tracking-[0.2em] text-white hover:text-ios-teal transition flex items-center gap-2">
+                                <span id="display-room-code">------</span>
+                                <i data-lucide="copy" class="w-5 h-5 text-white/60"></i>
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Divider on mobile/desktop -->
                 <div class="h-px sm:h-12 sm:w-px bg-white/10"></div>
 
-                <!-- Connect to Partner Code -->
+                <!-- Audience Join Form -->
                 <div class="flex-1 flex flex-col justify-center">
-                    <label class="text-xs font-medium text-white/60 mb-1.5 flex items-center justify-between">
-                        <span>Enter Partner's Code to Connect</span>
-                        <span id="room-participants-badge" class="text-[11px] text-ios-green font-semibold hidden">● 2 Users Linked</span>
+                    <label class="text-xs font-semibold text-white/60 mb-1 flex items-center justify-between">
+                        <span>Join Any Broadcast as Viewer</span>
+                        <span id="live-connection-tag" class="text-[10px] text-ios-green font-bold hidden">● Linked</span>
                     </label>
                     <div class="flex items-center gap-2">
                         <input 
-                            id="join-code-input" 
+                            id="viewer-code-input" 
                             type="text" 
-                            maxlength="6"
-                            placeholder="E.G. 4829" 
-                            class="w-full bg-black/40 border border-white/15 focus:border-ios-blue rounded-2xl px-3.5 py-2.5 text-sm sm:text-base font-bold tracking-widest uppercase text-white placeholder-white/30 outline-none transition"
+                            maxlength="8" 
+                            placeholder="Enter Code (e.g. 8492)" 
+                            class="w-full bg-black/40 border border-white/15 focus:border-ios-teal rounded-2xl px-3.5 py-2.5 text-sm sm:text-base font-bold tracking-widest uppercase text-white placeholder-white/30 transition"
                         />
                         <button 
-                            onclick="joinRoomByCode()" 
-                            id="connect-room-btn"
-                            class="bg-ios-blue hover:bg-ios-blue/90 active:scale-95 text-white font-semibold px-4 py-2.5 rounded-2xl text-sm shadow-lg shadow-ios-blue/30 transition flex items-center gap-1.5 shrink-0">
-                            <i class="ph-bold ph-link"></i>
-                            <span>Connect</span>
+                            onclick="joinAsViewer()" 
+                            class="bg-ios-teal hover:bg-ios-teal/90 active:scale-95 text-black font-extrabold px-4 py-2.5 rounded-2xl text-xs sm:text-sm shadow-lg shadow-ios-teal/30 transition flex items-center gap-1.5 shrink-0">
+                            <i data-lucide="log-in" class="w-4 h-4"></i>
+                            <span>Join</span>
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Right Card: 3 Seamless Casting Modes (5 cols) -->
+            <!-- Host Status & Audience Badges (5 Cols) -->
             <div class="lg:col-span-5 ios-glass rounded-[28px] p-4 sm:p-5 flex flex-col justify-between gap-3">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
-                        <i class="ph-fill ph-screencast text-ios-cyan text-lg"></i>
-                        <span class="text-xs uppercase tracking-wider font-semibold text-white/60">Select Cast Engine (Works on Android & PC)</span>
+                        <i data-lucide="sparkles" class="w-4 h-4 text-ios-orange"></i>
+                        <span class="text-xs uppercase tracking-wider font-bold text-white/60">Broadcast Hub Status</span>
                     </div>
-                    <button onclick="openAndroidModal()" class="text-xs font-semibold text-ios-orange bg-ios-orange/15 border border-ios-orange/30 px-2.5 py-1 rounded-full flex items-center gap-1 hover:bg-ios-orange/25 transition">
-                        <i class="ph-fill ph-android-logo text-sm"></i>
-                        <span>Android Guide</span>
+                    <button onclick="openAndroidHelperModal()" class="text-xs font-bold text-ios-orange bg-ios-orange/15 border border-ios-orange/30 px-3 py-1 rounded-full flex items-center gap-1 hover:bg-ios-orange/25 transition">
+                        <i data-lucide="help-circle" class="w-3.5 h-3.5"></i>
+                        <span>Android Help (اردو)</span>
                     </button>
                 </div>
 
-                <!-- 3 Pill Buttons for the 3 Cast Modes -->
-                <div class="grid grid-cols-3 gap-2">
-                    <button onclick="startScreenCast()" id="mode-btn-screen" class="cc-tile rounded-2xl p-2.5 flex flex-col items-center justify-center gap-1 text-center">
-                        <i class="ph-fill ph-monitor-arrow-up text-xl text-ios-blue"></i>
-                        <span class="text-xs font-semibold leading-tight">Screen Cast</span>
-                        <span class="text-[10px] text-white/45">PC / WebView</span>
-                    </button>
+                <!-- Dynamic Viewers Avatars Strip -->
+                <div class="flex items-center justify-between bg-black/30 rounded-2xl p-2.5 border border-white/10">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-full bg-ios-green/20 text-ios-green flex items-center justify-center font-bold text-xs border border-ios-green/30">
+                            <i data-lucide="users" class="w-4 h-4"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-bold text-white leading-tight">Connected Audience</div>
+                            <div id="members-list-subtitle" class="text-[10px] text-white/50">Waiting for viewers to enter code...</div>
+                        </div>
+                    </div>
+                    <div id="viewers-count-badge" class="bg-ios-green text-black text-xs font-black px-3 py-1 rounded-full shadow-md shadow-ios-green/30">
+                        1 Watching
+                    </div>
+                </div>
 
-                    <button onclick="switchStageMode('cobrowse')" id="mode-btn-cobrowse" class="cc-tile rounded-2xl p-2.5 flex flex-col items-center justify-center gap-1 text-center">
-                        <i class="ph-fill ph-globe-hemisphere-west text-xl text-ios-purple"></i>
-                        <span class="text-xs font-semibold leading-tight">Web & Video</span>
-                        <span class="text-[10px] text-white/45">100% Android</span>
-                    </button>
-
-                    <button onclick="startCameraCast()" id="mode-btn-camera" class="cc-tile rounded-2xl p-2.5 flex flex-col items-center justify-center gap-1 text-center">
-                        <i class="ph-fill ph-camera text-xl text-ios-green"></i>
-                        <span class="text-xs font-semibold leading-tight">Live Cam Cast</span>
-                        <span class="text-[10px] text-white/45">Android / iOS</span>
-                    </button>
+                <div class="text-[11px] text-white/55 flex items-center justify-between">
+                    <span>Active Feed: <strong id="current-feed-name" class="text-white">Idle</strong></span>
+                    <span id="role-indicator-text" class="text-ios-blue font-semibold">Broadcaster</span>
                 </div>
             </div>
         </section>
 
-        <!-- CENTER STAGE: Main Video / Screen Stream + Co-Browse Player + Live Chat Drawer -->
+        <!-- SECTION 2: THE MAIN STAGE & AUDIENCE VIEWPORT -->
         <section class="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1">
             
-            <!-- MAIN VIEWPORT (8 columns on Desktop) -->
-            <div class="lg:col-span-8 ios-glass rounded-[32px] p-3 sm:p-4 flex flex-col justify-between relative overflow-hidden min-h-[380px] sm:min-h-[470px]" id="stage-container">
+            <!-- STAGE (8 Cols) -->
+            <div id="main-stage-container" class="lg:col-span-8 ios-glass rounded-[34px] p-3 sm:p-4 flex flex-col justify-between relative overflow-hidden min-h-[440px] sm:min-h-[520px]">
                 
-                <!-- Floating Emoji Overlay Container -->
-                <div id="emoji-stage-overlay" class="absolute inset-0 pointer-events-none overflow-hidden z-40"></div>
+                <!-- Flying Emojis Stage Overlay -->
+                <div id="flying-emoji-overlay" class="absolute inset-0 pointer-events-none overflow-hidden z-50"></div>
 
-                <!-- Top Floating Bar inside Stage -->
-                <div class="flex items-center justify-between z-20 gap-2 flex-wrap">
-                    <div class="ios-glass-pill px-3 py-1.5 rounded-full flex items-center gap-2 text-xs font-medium">
-                        <span id="stage-mode-badge" class="w-2 h-2 rounded-full bg-ios-cyan"></span>
-                        <span id="stage-title">Waiting for Stream or Synced Media...</span>
+                <!-- Stage Header Bar -->
+                <div class="flex items-center justify-between z-20 gap-2 flex-wrap pb-2 border-b border-white/10">
+                    <div class="ios-pill px-3.5 py-1.5 rounded-full flex items-center gap-2 text-xs font-semibold">
+                        <span id="stage-badge-dot" class="w-2.5 h-2.5 rounded-full bg-ios-blue animate-pulse"></span>
+                        <span id="stage-title-text">Waiting to broadcast or join...</span>
                     </div>
 
+                    <!-- Stage Controls (Flip cam, Fullscreen, etc.) -->
                     <div class="flex items-center gap-1.5">
-                        <!-- Flip Camera Button (Only shown when camera casting) -->
-                        <button id="flip-cam-btn" onclick="switchCameraFacing()" class="hidden ios-glass-pill px-3 py-1.5 rounded-full text-xs font-semibold items-center gap-1.5 text-white">
-                            <i class="ph-bold ph-camera-rotate text-sm"></i>
+                        <button id="btn-flip-camera" onclick="flipMobileCamera()" class="hidden ios-pill px-3 py-1.5 rounded-full text-xs font-bold items-center gap-1.5 text-white">
+                            <i data-lucide="switch-camera" class="w-3.5 h-3.5"></i>
                             <span>Flip Cam</span>
                         </button>
 
-                        <!-- Canvas Snapshot Stream Fallback for Android -->
-                        <button onclick="sendQuickScreenSnapshot()" title="Send instant high-res frame to partner" class="ios-glass-pill px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 text-white/90 hover:text-white">
-                            <i class="ph-bold ph-aperture text-sm text-ios-cyan"></i>
-                            <span class="hidden sm:inline">Beam Snapshot</span>
+                        <button id="btn-stage-pip" onclick="togglePictureInPicture()" title="Picture in Picture" class="ios-pill w-8 h-8 rounded-full flex items-center justify-center text-white/80 hover:text-white">
+                            <i data-lucide="picture-in-picture-2" class="w-4 h-4"></i>
                         </button>
 
-                        <!-- PiP Button -->
-                        <button onclick="togglePiP()" title="Picture-in-Picture" class="ios-glass-pill w-8 h-8 rounded-full flex items-center justify-center text-white/80 hover:text-white">
-                            <i class="ph-bold ph-picture-in-picture text-sm"></i>
-                        </button>
-
-                        <!-- Fullscreen Button -->
-                        <button onclick="toggleFullscreen()" title="Fullscreen" class="ios-glass-pill w-8 h-8 rounded-full flex items-center justify-center text-white/80 hover:text-white">
-                            <i class="ph-bold ph-corners-out text-sm"></i>
+                        <button onclick="toggleStageFullscreen()" title="Fullscreen" class="ios-pill w-8 h-8 rounded-full flex items-center justify-center text-white/80 hover:text-white">
+                            <i data-lucide="maximize" class="w-4 h-4"></i>
                         </button>
                     </div>
                 </div>
 
-                <!-- STAGE VIEW 1: WebRTC Video / Screen Stream -->
-                <div id="webrtc-stage" class="relative flex-1 flex items-center justify-center my-2 rounded-[24px] bg-black/50 border border-white/10 overflow-hidden">
+                <!-- CENTRAL VIEWPORT AREA -->
+                <div class="relative flex-1 flex items-center justify-center my-2 rounded-[26px] bg-black/80 border border-white/10 overflow-hidden" id="viewport-box">
                     
-                    <!-- Placeholder State when no stream is active -->
-                    <div id="stream-empty-state" class="flex flex-col items-center justify-center text-center p-6 max-w-md z-10">
-                        <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-ios-blue/20 via-ios-purple/20 to-ios-cyan/20 border border-white/15 flex items-center justify-center mb-4 shadow-inner">
-                            <i class="ph-duotone ph-airplay text-4xl text-ios-cyan animate-pulse"></i>
+                    <!-- 1. EMPTY / IDLE STATE -->
+                    <div id="empty-stage-state" class="flex flex-col items-center justify-center text-center p-6 max-w-md z-10">
+                        <div class="w-20 h-20 rounded-3xl bg-gradient-to-tr from-ios-blue/20 via-ios-purple/20 to-ios-teal/20 border border-white/15 flex items-center justify-center mb-4 shadow-inner">
+                            <i data-lucide="cast" class="w-10 h-10 text-ios-teal animate-pulse"></i>
                         </div>
-                        <h2 class="text-lg sm:text-xl font-bold tracking-tight text-white">Ready for Two-Way Casting</h2>
+                        <h2 class="text-lg sm:text-xl font-bold tracking-tight text-white">Ready for Multi-Viewer Cast</h2>
                         <p class="text-xs sm:text-sm text-white/55 mt-1.5 leading-relaxed">
-                            Share your <span class="text-white font-semibold">6-character Room Code</span> with a friend. Once connected, cast your <span class="text-ios-blue font-medium">Screen</span>, <span class="text-ios-green font-medium">Live Camera</span>, or <span class="text-ios-purple font-medium">Synced Web/Video Player</span>.
+                            Share this Room Code with anyone. Whatever you play, stream, or draw on Android/PC will appear on all joined viewers' screens in real-time!
                         </p>
-                        <div class="mt-5 flex flex-wrap items-center justify-center gap-2">
-                            <button onclick="startScreenCast()" class="bg-ios-blue hover:bg-ios-blue/90 text-white text-xs font-semibold px-4 py-2.5 rounded-full flex items-center gap-1.5 shadow-lg shadow-ios-blue/30 transition">
-                                <i class="ph-bold ph-screencast"></i>
-                                <span>Cast Screen</span>
+                        
+                        <!-- Quick action buttons in empty state for host -->
+                        <div id="host-quick-actions" class="mt-5 flex flex-wrap items-center justify-center gap-2">
+                            <button onclick="startSyncedVideoMode()" class="bg-ios-purple text-white font-bold text-xs px-4 py-2.5 rounded-full flex items-center gap-1.5 shadow-lg shadow-ios-purple/30">
+                                <i data-lucide="film" class="w-3.5 h-3.5"></i>
+                                <span>Sync Video / YouTube</span>
                             </button>
-                            <button onclick="switchStageMode('cobrowse')" class="bg-ios-purple/80 hover:bg-ios-purple text-white text-xs font-semibold px-4 py-2.5 rounded-full flex items-center gap-1.5 shadow-lg shadow-ios-purple/30 transition">
-                                <i class="ph-bold ph-play-circle"></i>
-                                <span>Android Co-Watch / Web Cast</span>
-                            </button>
-                            <button onclick="startCameraCast()" class="bg-white/10 hover:bg-white/15 text-white text-xs font-semibold px-4 py-2.5 rounded-full flex items-center gap-1.5 border border-white/15 transition">
-                                <i class="ph-bold ph-video-camera"></i>
-                                <span>Cast Camera</span>
+                            <button onclick="startInteractiveCanvasPresenter()" class="bg-ios-green text-black font-bold text-xs px-4 py-2.5 rounded-full flex items-center gap-1.5 shadow-lg shadow-ios-green/30">
+                                <i data-lucide="presentation" class="w-3.5 h-3.5"></i>
+                                <span>Interactive Whiteboard</span>
                             </button>
                         </div>
                     </div>
 
-                    <!-- Remote Partner Video / Screen Stream -->
-                    <video id="remote-video" autoplay playsinline class="hidden w-full h-full object-contain max-h-[62vh] rounded-[20px]"></video>
+                    <!-- 2. WEBRTC LIVE VIDEO STREAM (Screen Cast or Camera Mirror) -->
+                    <video id="broadcast-video-feed" autoplay playsinline class="hidden w-full h-full object-contain max-h-[64vh] rounded-[22px]"></video>
 
-                    <!-- Shared Photo / Screen Snapshot Viewer (for Android screenshot sharing) -->
-                    <div id="shared-image-overlay" class="hidden absolute inset-0 bg-black/90 z-20 flex-col items-center justify-center p-3">
-                        <div class="flex items-center justify-between w-full px-3 py-1.5 mb-2 bg-white/10 rounded-full text-xs">
-                            <span id="shared-image-caption" class="font-semibold text-ios-cyan">Live Screen Snapshot Shared</span>
-                            <button onclick="closeSharedImage()" class="text-white/70 hover:text-white font-bold px-2">Close ✕</button>
+                    <!-- 3. SYNCED MEDIA PLAYER (Host & Viewers 100% Synced) -->
+                    <div id="synced-media-box" class="hidden flex-col w-full h-full p-2 bg-black">
+                        <div id="host-media-controller" class="p-2.5 bg-white/5 border border-white/10 rounded-2xl mb-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                            <div class="flex items-center gap-2 flex-1 bg-black/60 border border-white/15 rounded-xl px-3 py-1.5">
+                                <i data-lucide="link-2" class="w-4 h-4 text-ios-purple"></i>
+                                <input 
+                                    id="media-source-url" 
+                                    type="text" 
+                                    placeholder="Enter MP4 Video URL or load preset below..." 
+                                    class="w-full bg-transparent text-xs text-white placeholder-white/40"
+                                />
+                            </div>
+                            <div class="flex items-center gap-1.5 justify-end">
+                                <button onclick="broadcastLoadMediaUrl()" class="bg-ios-purple hover:bg-ios-purple/90 text-white font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1 shadow-md">
+                                    <i data-lucide="broadcast" class="w-3.5 h-3.5"></i>
+                                    <span>Sync to All Viewers</span>
+                                </button>
+                                <button onclick="document.getElementById('local-video-file-picker').click()" class="bg-ios-blue hover:bg-ios-blue/90 text-white font-semibold text-xs px-3 py-2 rounded-xl flex items-center gap-1">
+                                    <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+                                    <span>From Android Phone</span>
+                                </button>
+                                <input type="file" id="local-video-file-picker" accept="video/*" class="hidden" onchange="handleLocalVideoSelected(event)" />
+                            </div>
                         </div>
-                        <img id="shared-image-view" src="" alt="Shared Screen" class="max-h-[50vh] w-auto object-contain rounded-xl border border-white/15" />
+
+                        <!-- Presets Pill Bar -->
+                        <div class="px-2 pb-2 flex items-center gap-1.5 overflow-x-auto text-[11px] whitespace-nowrap">
+                            <span class="text-white/40 font-bold">Fast Presets:</span>
+                            <button onclick="loadSampleVideo('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', 'Big Buck Bunny (HD)')" class="ios-pill px-2.5 py-1 rounded-full text-ios-teal">🐰 Big Buck Bunny HD</button>
+                            <button onclick="loadSampleVideo('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4', 'Elephants Dream Sci-Fi')" class="ios-pill px-2.5 py-1 rounded-full text-ios-purple">🚀 Sci-Fi Short Movie</button>
+                            <button onclick="loadSampleVideo('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4', 'High Energy Video')" class="ios-pill px-2.5 py-1 rounded-full text-ios-green">🔥 Chromecaster Promo</button>
+                        </div>
+
+                        <!-- Video Player Tag -->
+                        <div class="flex-1 relative flex items-center justify-center bg-black/90 rounded-2xl overflow-hidden min-h-[280px]">
+                            <video 
+                                id="synced-core-player" 
+                                controls 
+                                playsinline 
+                                class="w-full h-full max-h-[50vh] object-contain"
+                                onplay="handleHostVideoAction('play')"
+                                onpause="handleHostVideoAction('pause')"
+                                onseeked="handleHostVideoAction('seek')"
+                            ></video>
+                        </div>
                     </div>
 
-                    <!-- Local Preview Picture-in-Picture Corner -->
-                    <div id="local-preview-card" class="hidden absolute bottom-3 right-3 w-32 sm:w-44 aspect-video bg-black/80 rounded-2xl overflow-hidden border border-white/25 shadow-2xl z-30 group">
-                        <video id="local-video" autoplay muted playsinline class="w-full h-full object-cover"></video>
-                        <div class="absolute bottom-1.5 left-2 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-full text-[10px] font-semibold text-white/90 flex items-center gap-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-ios-green"></span>
-                            <span>You</span>
+                    <!-- 4. INTERACTIVE CANVAS / LIVE WHITEBOARD & PHOTO SCREENSHOT PRESENTER -->
+                    <div id="interactive-canvas-box" class="hidden flex-col w-full h-full p-2 bg-[#121214]">
+                        <!-- Canvas Controls for Host -->
+                        <div id="canvas-toolbar" class="p-2 bg-white/5 border border-white/10 rounded-2xl mb-2 flex items-center justify-between gap-2 flex-wrap">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-bold text-ios-green flex items-center gap-1">
+                                    <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                                    <span>Presenter Whiteboard</span>
+                                </span>
+                                <div class="flex items-center gap-1 pl-2 border-l border-white/10">
+                                    <button onclick="setDrawColor('#FFFFFF')" class="w-5 h-5 rounded-full bg-white border border-white/30"></button>
+                                    <button onclick="setDrawColor('#007AFF')" class="w-5 h-5 rounded-full bg-ios-blue border border-white/30"></button>
+                                    <button onclick="setDrawColor('#34C759')" class="w-5 h-5 rounded-full bg-ios-green border border-white/30"></button>
+                                    <button onclick="setDrawColor('#FF9500')" class="w-5 h-5 rounded-full bg-ios-orange border border-white/30"></button>
+                                    <button onclick="setDrawColor('#FF3B30')" class="w-5 h-5 rounded-full bg-ios-red border border-white/30"></button>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <button onclick="triggerScreenshotShare()" class="bg-ios-blue hover:bg-ios-blue/90 text-white font-semibold text-xs px-3 py-1.5 rounded-xl flex items-center gap-1">
+                                    <i data-lucide="image" class="w-3.5 h-3.5"></i>
+                                    <span>Cast Screenshot</span>
+                                </button>
+                                <button onclick="clearLiveCanvas()" class="bg-white/10 hover:bg-white/15 text-white font-semibold text-xs px-3 py-1.5 rounded-xl">
+                                    Clear
+                                </button>
+                                <input type="file" id="canvas-image-file" accept="image/*" class="hidden" onchange="handleCanvasImageUpload(event)" />
+                            </div>
+                        </div>
+
+                        <!-- The Actual Canvas Element -->
+                        <div class="flex-1 relative bg-black/90 rounded-2xl overflow-hidden flex items-center justify-center min-h-[280px]">
+                            <canvas id="presenter-canvas" class="max-w-full max-h-[50vh] object-contain cursor-crosshair border border-white/10 rounded-xl bg-black"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Local PIP preview (when Host is casting camera or screen) -->
+                    <div id="host-local-pip" class="hidden absolute bottom-3 right-3 w-32 sm:w-44 aspect-video bg-black/85 rounded-2xl overflow-hidden border border-white/20 shadow-2xl z-30">
+                        <video id="host-local-video" autoplay muted playsinline class="w-full h-full object-cover"></video>
+                        <div class="absolute bottom-1 left-2 bg-black/70 backdrop-blur-md px-2 py-0.5 rounded-full text-[9px] font-bold text-white flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-ios-green animate-pulse"></span>
+                            <span>You (Broadcasting)</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- STAGE VIEW 2: Built-in Co-Browse / URL & Synced Video Caster (Works 100% on Android) -->
-                <div id="cobrowse-stage" class="hidden flex-1 flex-col my-2 rounded-[24px] bg-black/60 border border-white/15 overflow-hidden">
-                    
-                    <!-- Top URL / Media Bar -->
-                    <div class="p-2.5 bg-white/5 border-b border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                        <div class="flex items-center gap-1.5 flex-1 bg-black/50 border border-white/15 rounded-2xl px-3 py-1.5">
-                            <i class="ph-bold ph-globe text-ios-purple"></i>
-                            <input 
-                                id="cobrowse-url-input" 
-                                type="text" 
-                                placeholder="Paste YouTube URL, MP4 link, or Website URL to cast..." 
-                                class="w-full bg-transparent text-xs sm:text-sm text-white placeholder-white/35 outline-none"
-                            />
-                        </div>
-                        <div class="flex items-center gap-1.5 justify-end">
-                            <button onclick="syncMediaUrlToRoom()" class="bg-ios-purple hover:bg-ios-purple/90 text-white text-xs font-semibold px-3.5 py-2 rounded-xl flex items-center gap-1 shadow-md">
-                                <i class="ph-bold ph-broadcast"></i>
-                                <span>Cast to Both</span>
-                            </button>
-                            <button onclick="triggerPhotoScreenShare()" class="bg-ios-blue/80 hover:bg-ios-blue text-white text-xs font-semibold px-3 py-2 rounded-xl flex items-center gap-1" title="Upload or beam a screenshot from Android">
-                                <i class="ph-bold ph-image-square"></i>
-                                <span>Cast Screenshot</span>
-                            </button>
-                            <input type="file" id="screenshot-file-input" accept="image/*" class="hidden" onchange="handleScreenshotUpload(event)" />
-                        </div>
-                    </div>
-
-                    <!-- Quick Preset Pills for Instant Testing on Android & Desktop -->
-                    <div class="px-3 py-2 bg-white/[0.03] border-b border-white/5 flex items-center gap-2 overflow-x-auto text-[11px] whitespace-nowrap">
-                        <span class="text-white/40 font-semibold">Instant Cast Presets:</span>
-                        <button onclick="loadPresetMedia('mp4', 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4')" class="ios-glass-pill px-2.5 py-1 rounded-full text-ios-cyan hover:text-white">🎬 Big Buck Bunny (Synced MP4)</button>
-                        <button onclick="loadPresetMedia('mp4', 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4')" class="ios-glass-pill px-2.5 py-1 rounded-full text-ios-green hover:text-white">🎞️ Sci-Fi Short (Synced MP4)</button>
-                        <button onclick="loadPresetMedia('wiki', 'https://en.m.wikipedia.org/wiki/WebRTC')" class="ios-glass-pill px-2.5 py-1 rounded-full text-ios-purple hover:text-white">🌐 Wikipedia Live Co-Browse</button>
-                        <button onclick="switchStageMode('webrtc')" class="ios-glass-pill px-2.5 py-1 rounded-full text-white/70 hover:text-white ml-auto">← Back to Video Stage</button>
-                    </div>
-
-                    <!-- Synced Content Viewport (HTML5 Synced Video / YouTube Embed / Reader Proxy) -->
-                    <div class="flex-1 relative flex items-center justify-center bg-black/80 min-h-[260px]">
-                        <!-- Synced HTML5 Video Player -->
-                        <video id="synced-video-player" controls playsinline class="w-full h-full max-h-[46vh] object-contain" src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"></video>
-
-                        <!-- Synced Website / YouTube Iframe -->
-                        <iframe id="synced-iframe" class="hidden w-full h-full min-h-[320px] border-0 bg-white" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
-                    </div>
-                </div>
-
-                <!-- Bottom Floating Emoji Reaction Bar -->
+                <!-- Stage Footer: Emoji Reaction & Quality Status -->
                 <div class="flex items-center justify-between gap-2 pt-1 z-20 flex-wrap">
-                    <div class="flex items-center gap-1 sm:gap-1.5 bg-white/5 border border-white/10 rounded-full px-2.5 py-1">
-                        <span class="text-[11px] text-white/45 px-1 hidden sm:inline">React:</span>
-                        <button onclick="sendReaction('🔥')" class="hover:scale-125 active:scale-90 transition text-base sm:text-lg px-1">🔥</button>
-                        <button onclick="sendReaction('❤️')" class="hover:scale-125 active:scale-90 transition text-base sm:text-lg px-1">❤️</button>
-                        <button onclick="sendReaction('😂')" class="hover:scale-125 active:scale-90 transition text-base sm:text-lg px-1">😂</button>
-                        <button onclick="sendReaction('👏')" class="hover:scale-125 active:scale-90 transition text-base sm:text-lg px-1">👏</button>
-                        <button onclick="sendReaction('🤯')" class="hover:scale-125 active:scale-90 transition text-base sm:text-lg px-1">🤯</button>
-                        <button onclick="sendReaction('🚀')" class="hover:scale-125 active:scale-90 transition text-base sm:text-lg px-1">🚀</button>
+                    <div class="flex items-center gap-1 sm:gap-1.5 bg-white/5 border border-white/10 rounded-full px-3 py-1">
+                        <span class="text-[11px] text-white/50 px-1 hidden sm:inline">Tap React:</span>
+                        <button onclick="triggerBroadcastEmoji('❤️')" class="hover:scale-130 active:scale-90 transition text-lg px-1">❤️</button>
+                        <button onclick="triggerBroadcastEmoji('🔥')" class="hover:scale-130 active:scale-90 transition text-lg px-1">🔥</button>
+                        <button onclick="triggerBroadcastEmoji('👏')" class="hover:scale-130 active:scale-90 transition text-lg px-1">👏</button>
+                        <button onclick="triggerBroadcastEmoji('🚀')" class="hover:scale-130 active:scale-90 transition text-lg px-1">🚀</button>
+                        <button onclick="triggerBroadcastEmoji('😮')" class="hover:scale-130 active:scale-90 transition text-lg px-1">😮</button>
                     </div>
 
-                    <!-- Current Stream Status Pill -->
-                    <div class="text-[11px] text-white/55 font-medium flex items-center gap-2">
-                        <span id="stream-resolution-info">P2P Encrypted • Ready</span>
+                    <div class="text-[11px] text-white/60 font-semibold flex items-center gap-2">
+                        <span id="latency-indicator" class="flex items-center gap-1 text-ios-green">
+                            <i data-lucide="wifi" class="w-3.5 h-3.5"></i>
+                            <span>PeerMesh 0ms</span>
+                        </span>
+                        <span class="text-white/20">•</span>
+                        <span id="broadcast-status-label" class="text-white/70">iOS 18 Sync Engine</span>
                     </div>
                 </div>
             </div>
 
-            <!-- RIGHT COLUMN: iOS Control Center & Live Synced Chat (4 columns on Desktop) -->
+            <!-- RIGHT COLUMN: iOS Control Center & Live Chat (4 Cols) -->
             <div class="lg:col-span-4 flex flex-col gap-4">
                 
-                <!-- iOS 18 Control Center Grid -->
+                <!-- iOS 18 Control Center Broadcaster Tiles -->
                 <div class="ios-glass rounded-[32px] p-4 space-y-3">
                     <div class="flex items-center justify-between px-1">
-                        <span class="text-xs font-bold uppercase tracking-wider text-white/50">iOS 18 Control Center</span>
-                        <span id="cc-status-label" class="text-[11px] text-ios-cyan font-medium">All Systems Ready</span>
+                        <span class="text-xs font-extrabold uppercase tracking-wider text-white/50">Cast Control Center</span>
+                        <span id="cc-role-badge" class="text-[10px] bg-ios-blue/20 text-ios-blue border border-ios-blue/30 px-2 py-0.5 rounded-full font-bold uppercase">Host Controls</span>
                     </div>
 
                     <div class="grid grid-cols-2 gap-2.5">
-                        <!-- Screen Share Tile -->
-                        <button id="cc-screen-btn" onclick="toggleScreenCast()" class="cc-tile rounded-[22px] p-3.5 flex items-center gap-3 text-left">
-                            <div class="w-10 h-10 rounded-full bg-ios-blue/20 text-ios-blue flex items-center justify-center shrink-0" id="cc-screen-icon">
-                                <i class="ph-fill ph-screencast text-xl"></i>
+                        
+                        <!-- Tile 1: Android Camera Stream -->
+                        <button id="tile-camera" onclick="startCameraBroadcast()" class="cc-tile rounded-[22px] p-3 flex items-center gap-3 text-left">
+                            <div class="w-10 h-10 rounded-2xl bg-ios-green/20 text-ios-green flex items-center justify-center shrink-0">
+                                <i data-lucide="camera" class="w-5 h-5"></i>
                             </div>
                             <div class="overflow-hidden">
-                                <div class="text-xs font-bold text-white truncate">Screen Mirror</div>
-                                <div id="cc-screen-sub" class="text-[10px] text-white/50 truncate">Off</div>
+                                <div class="text-xs font-bold text-white truncate">Android Cam</div>
+                                <div id="tile-camera-sub" class="text-[10px] text-white/50 truncate">Live Mirror</div>
                             </div>
                         </button>
 
-                        <!-- Camera Cast Tile -->
-                        <button id="cc-cam-btn" onclick="toggleCameraCast()" class="cc-tile rounded-[22px] p-3.5 flex items-center gap-3 text-left">
-                            <div class="w-10 h-10 rounded-full bg-ios-green/20 text-ios-green flex items-center justify-center shrink-0" id="cc-cam-icon">
-                                <i class="ph-fill ph-video-camera text-xl"></i>
+                        <!-- Tile 2: Synced Video Player -->
+                        <button id="tile-video" onclick="startSyncedVideoMode()" class="cc-tile rounded-[22px] p-3 flex items-center gap-3 text-left">
+                            <div class="w-10 h-10 rounded-2xl bg-ios-purple/20 text-ios-purple flex items-center justify-center shrink-0">
+                                <i data-lucide="play-square" class="w-5 h-5"></i>
                             </div>
                             <div class="overflow-hidden">
-                                <div class="text-xs font-bold text-white truncate">Camera Cast</div>
-                                <div id="cc-cam-sub" class="text-[10px] text-white/50 truncate">Off</div>
+                                <div class="text-xs font-bold text-white truncate">Sync Video</div>
+                                <div id="tile-video-sub" class="text-[10px] text-white/50 truncate">MP4 / Local</div>
                             </div>
                         </button>
 
-                        <!-- Mic Mute/Unmute Tile -->
-                        <button id="cc-mic-btn" onclick="toggleMuteAudio()" class="cc-tile rounded-[22px] p-3.5 flex items-center gap-3 text-left">
-                            <div class="w-10 h-10 rounded-full bg-ios-orange/20 text-ios-orange flex items-center justify-center shrink-0" id="cc-mic-icon">
-                                <i class="ph-fill ph-microphone text-xl"></i>
+                        <!-- Tile 3: Live Whiteboard & Presenter -->
+                        <button id="tile-canvas" onclick="startInteractiveCanvasPresenter()" class="cc-tile rounded-[22px] p-3 flex items-center gap-3 text-left">
+                            <div class="w-10 h-10 rounded-2xl bg-ios-orange/20 text-ios-orange flex items-center justify-center shrink-0">
+                                <i data-lucide="pen-tool" class="w-5 h-5"></i>
                             </div>
                             <div class="overflow-hidden">
-                                <div class="text-xs font-bold text-white truncate">Microphone</div>
-                                <div id="cc-mic-sub" class="text-[10px] text-white/50 truncate">Active</div>
+                                <div class="text-xs font-bold text-white truncate">Whiteboard</div>
+                                <div id="tile-canvas-sub" class="text-[10px] text-white/50 truncate">Draw & Photos</div>
                             </div>
                         </button>
 
-                        <!-- Stop / Disconnect Stream Tile -->
-                        <button id="cc-stop-btn" onclick="stopAllStreams()" class="cc-tile rounded-[22px] p-3.5 flex items-center gap-3 text-left">
-                            <div class="w-10 h-10 rounded-full bg-ios-red/20 text-ios-red flex items-center justify-center shrink-0">
-                                <i class="ph-fill ph-power text-xl"></i>
+                        <!-- Tile 4: Native Screen Cast (Desktop / Supported WebKit) -->
+                        <button id="tile-screen" onclick="startNativeScreenCast()" class="cc-tile rounded-[22px] p-3 flex items-center gap-3 text-left">
+                            <div class="w-10 h-10 rounded-2xl bg-ios-blue/20 text-ios-blue flex items-center justify-center shrink-0">
+                                <i data-lucide="monitor-up" class="w-5 h-5"></i>
                             </div>
                             <div class="overflow-hidden">
-                                <div class="text-xs font-bold text-white truncate">Stop Cast</div>
-                                <div class="text-[10px] text-white/50 truncate">Reset Stream</div>
+                                <div class="text-xs font-bold text-white truncate">Screen Cast</div>
+                                <div id="tile-screen-sub" class="text-[10px] text-white/50 truncate">OS Mirror</div>
                             </div>
                         </button>
                     </div>
+
+                    <!-- Reset Cast Button -->
+                    <button onclick="stopAllActiveBroadcasts()" class="w-full bg-white/5 hover:bg-ios-red/20 hover:border-ios-red/40 border border-white/10 text-white/80 hover:text-ios-red font-semibold text-xs py-2.5 rounded-2xl transition flex items-center justify-center gap-1.5">
+                        <i data-lucide="square" class="w-3.5 h-3.5"></i>
+                        <span>Reset & Stop Current Cast</span>
+                    </button>
                 </div>
 
-                <!-- Live iMessage Style Room Chat & Activity Feed -->
-                <div class="ios-glass rounded-[32px] p-4 flex-1 flex flex-col justify-between min-h-[250px] max-h-[340px]">
+                <!-- Live iMessage Style Room Chat -->
+                <div class="ios-glass rounded-[32px] p-4 flex-1 flex flex-col justify-between min-h-[260px] max-h-[340px]">
                     <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
                         <div class="flex items-center gap-2">
-                            <i class="ph-fill ph-chat-circle-dots text-ios-blue text-lg"></i>
-                            <span class="text-xs font-bold uppercase tracking-wider text-white/70">Live Room Chat</span>
+                            <i data-lucide="message-square" class="w-4 h-4 text-ios-blue"></i>
+                            <span class="text-xs font-bold uppercase tracking-wider text-white/70">Broadcast Chat</span>
                         </div>
-                        <span id="chat-room-indicator" class="text-[11px] text-white/40">Synced via Cloud</span>
+                        <span id="chat-counter-label" class="text-[10px] text-white/40">Multi-User Room</span>
                     </div>
 
-                    <!-- Messages List -->
-                    <div id="chat-messages" class="flex-1 overflow-y-auto py-3 space-y-2 pr-1 text-xs">
+                    <div id="chat-messages-container" class="flex-1 overflow-y-auto py-3 space-y-2 pr-1 text-xs">
                         <div class="bg-white/5 border border-white/10 rounded-2xl p-2.5 text-white/60 text-[11px] leading-relaxed">
-                            👋 Welcome to <span class="text-white font-semibold">iCast 18</span>. Connect with a 6-character code to chat, sync videos, or stream your screen & camera live!
+                            👋 <strong class="text-white">Welcome to iCast Hub!</strong> Jo kuch bhi Host screen ya video par play karega, har connected viewer ke pas foran sync hoga!
                         </div>
                     </div>
 
-                    <!-- Chat Input Box -->
-                    <form onsubmit="sendChatMessage(event)" class="flex items-center gap-2 pt-2 border-t border-white/10">
+                    <form onsubmit="handleSendChatMessage(event)" class="flex items-center gap-2 pt-2 border-t border-white/10">
                         <input 
-                            id="chat-input" 
+                            id="chat-text-input" 
                             type="text" 
-                            placeholder="iMessage to partner..." 
-                            class="flex-1 bg-black/40 border border-white/15 focus:border-ios-blue rounded-full px-3.5 py-2 text-xs text-white placeholder-white/35 outline-none"
+                            placeholder="Message all viewers..." 
+                            class="flex-1 bg-black/40 border border-white/15 focus:border-ios-blue rounded-full px-3.5 py-2 text-xs text-white placeholder-white/35"
                         />
-                        <button type="submit" class="w-8 h-8 rounded-full bg-ios-blue flex items-center justify-center text-white hover:bg-ios-blue/90 active:scale-90 transition shrink-0">
-                            <i class="ph-bold ph-arrow-up text-sm"></i>
+                        <button type="submit" class="w-8 h-8 rounded-full bg-ios-blue flex items-center justify-center text-white hover:bg-ios-blue/90 active:scale-90 transition shrink-0 shadow-md">
+                            <i data-lucide="arrow-up" class="w-4 h-4"></i>
                         </button>
                     </form>
                 </div>
-
             </div>
         </section>
     </main>
 
-    <!-- ANDROID CAST HELPER MODAL (iOS 18 Sheet Style) -->
-    <div id="android-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/70 backdrop-blur-md">
-        <div class="ios-glass rounded-[32px] max-w-lg w-full p-6 border border-white/20 space-y-4 animate-[fadeIn_0.25s_ease-out]">
-            <div class="flex items-center justify-between">
+    <!-- FLOATING iOS DOCK AT BOTTOM -->
+    <nav class="fixed bottom-3 left-1/2 -translate-x-1/2 z-40 ios-glass rounded-full px-4 py-2 flex items-center gap-3 sm:gap-4 shadow-2xl border border-white/20">
+        <button onclick="toggleAudioMute()" id="dock-btn-mic" title="Toggle Mic / Audio" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 active:scale-90 flex items-center justify-center text-white transition">
+            <i data-lucide="mic" class="w-5 h-5 text-ios-orange"></i>
+        </button>
+
+        <button onclick="startCameraBroadcast()" title="Cast Camera" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 active:scale-90 flex items-center justify-center text-white transition">
+            <i data-lucide="video" class="w-5 h-5 text-ios-green"></i>
+        </button>
+
+        <button onclick="startSyncedVideoMode()" title="Sync Video Player" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 active:scale-90 flex items-center justify-center text-white transition">
+            <i data-lucide="film" class="w-5 h-5 text-ios-purple"></i>
+        </button>
+
+        <button onclick="startInteractiveCanvasPresenter()" title="Whiteboard / Photo Share" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 active:scale-90 flex items-center justify-center text-white transition">
+            <i data-lucide="pen-tool" class="w-5 h-5 text-ios-teal"></i>
+        </button>
+
+        <button onclick="copyHostRoomCode()" title="Copy Room Invite Code" class="w-10 h-10 rounded-full bg-ios-blue hover:bg-ios-blue/90 active:scale-90 flex items-center justify-center text-white shadow-lg shadow-ios-blue/30 transition">
+            <i data-lucide="share-2" class="w-5 h-5"></i>
+        </button>
+    </nav>
+
+    <!-- ANDROID HELPER MODAL (Urdu / English Guide) -->
+    <div id="android-helper-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <div class="ios-glass rounded-[32px] max-w-lg w-full p-6 border border-white/20 space-y-4 animate-[fadeIn_0.2s_ease-out]">
+            <div class="flex items-center justify-between border-b border-white/10 pb-3">
                 <div class="flex items-center gap-2.5">
-                    <div class="w-10 h-10 rounded-2xl bg-ios-green/20 border border-ios-green/40 flex items-center justify-center text-ios-green">
-                        <i class="ph-fill ph-android-logo text-2xl"></i>
+                    <div class="w-10 h-10 rounded-2xl bg-ios-orange/20 border border-ios-orange/30 flex items-center justify-center text-ios-orange">
+                        <i data-lucide="smartphone" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <h3 class="text-base font-bold text-white">Android & Mobile Casting Guide</h3>
-                        <p class="text-xs text-white/50">3 Ways to Cast Seamlessly on Android & iOS</p>
+                        <h3 class="text-base font-bold text-white">Android Screen Casting Guide (حل)</h3>
+                        <p class="text-xs text-white/50">Why Mobile Chrome restricts OS Screen Mirroring</p>
                     </div>
                 </div>
-                <button onclick="closeAndroidModal()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/70 hover:text-white">✕</button>
+                <button onclick="closeAndroidHelperModal()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/70 hover:text-white">✕</button>
             </div>
 
-            <div class="space-y-3 text-xs leading-relaxed text-white/80">
+            <div class="space-y-3 text-xs leading-relaxed text-white/80 max-h-[60vh] overflow-y-auto pr-1">
                 <div class="bg-white/5 border border-white/10 rounded-2xl p-3.5">
-                    <div class="font-bold text-ios-purple flex items-center gap-1.5 mb-1">
-                        <i class="ph-fill ph-globe-hemisphere-west"></i>
-                        <span>1. Web & Video Co-Browse (Works on ALL Android Browsers)</span>
-                    </div>
+                    <div class="font-bold text-ios-red mb-1">Android Browser Ki Pabandi (Limitation):</div>
                     <p class="text-white/60">
-                        Mobile Chrome restricts OS-level `getDisplayMedia()`. Use our built-in <span class="text-white font-medium">Web & Video Cast</span> tab to watch MP4s, streams, websites, or beam instant screenshots in real-time between two Android phones!
+                        Android OS ke Chrome, Firefox ya Samsung Internet browser mein security ki waja se seedha poori mobile screen ka access (<code class="text-ios-teal">getDisplayMedia</code>) allow nahi hota aur foran error ya block show karta hai.
                     </p>
                 </div>
 
                 <div class="bg-white/5 border border-white/10 rounded-2xl p-3.5">
-                    <div class="font-bold text-ios-green flex items-center gap-1.5 mb-1">
-                        <i class="ph-fill ph-camera"></i>
-                        <span>2. Live Back/Front Camera & Audio Cast (Native WebRTC)</span>
-                    </div>
+                    <div class="font-bold text-ios-green mb-1">Hal No. 1: "Sync Video / Movie Mode"</div>
                     <p class="text-white/60">
-                        Tap <span class="text-white font-medium">Live Cam Cast</span> to stream your front or rear camera + microphone directly to your partner via P2P WebRTC. You can flip between front & back cameras anytime.
+                        Agar aapko koi video, movie ya clip sab doston ko dikhani hai, tou <strong class="text-white">Sync Video</strong> select karein. Host phone se koi bhi video file ya URL daale ga, tou sabke paas foran same waqt par play aur pause hogi!
                     </p>
                 </div>
 
                 <div class="bg-white/5 border border-white/10 rounded-2xl p-3.5">
-                    <div class="font-bold text-ios-blue flex items-center gap-1.5 mb-1">
-                        <i class="ph-fill ph-monitor-arrow-up"></i>
-                        <span>3. Full OS Screen Mirroring (`getDisplayMedia`)</span>
-                    </div>
+                    <div class="font-bold text-ios-purple mb-1">Hal No. 2: "Whiteboard & Screenshot Beamer"</div>
                     <p class="text-white/60">
-                        Works out-of-the-box on Desktop/Laptop Chrome, Edge, Safari, or inside custom Android WebView wrappers with media projection permissions enabled.
+                        Agar aapko mobile screen ka koi screenshot ya photo dikhana hai, tou <strong class="text-white">Cast Screenshot</strong> dabayein. Foran sabhi viewers ke screen par live render ho jaye gi. Saath hi aap live draw bhi kar sakte hain!
+                    </p>
+                </div>
+
+                <div class="bg-white/5 border border-white/10 rounded-2xl p-3.5">
+                    <div class="font-bold text-ios-teal mb-1">Hal No. 3: "Android Camera Mirror"</div>
+                    <p class="text-white/60">
+                        Camera tile dabane se aapka front ya back camera real-time WebRTC se sabhi unlimited viewers tak stream ho jayega.
                     </p>
                 </div>
             </div>
 
-            <div class="pt-2 flex justify-end gap-2">
-                <button onclick="switchStageMode('cobrowse'); closeAndroidModal();" class="bg-ios-purple text-white font-semibold text-xs px-4 py-2.5 rounded-2xl">
-                    Open Android Co-Browse
-                </button>
-                <button onclick="closeAndroidModal()" class="bg-white/15 text-white font-semibold text-xs px-4 py-2.5 rounded-2xl">
-                    Got It
+            <div class="pt-2 flex justify-end">
+                <button onclick="closeAndroidHelperModal()" class="bg-ios-teal text-black font-extrabold text-xs px-5 py-2.5 rounded-2xl shadow-lg shadow-ios-teal/20">
+                    Samajh Gaya (Close)
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- iOS Toast Notification Pill -->
-    <div id="ios-toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 transition-all duration-300 translate-y-3">
+    <!-- Toast Notification -->
+    <div id="ios-toast-box" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 transition-all duration-300 translate-y-3">
         <div class="ios-glass px-4 py-2.5 rounded-full flex items-center gap-2.5 text-xs font-semibold text-white shadow-2xl border border-white/20">
-            <i id="toast-icon" class="ph-fill ph-check-circle text-ios-green text-base"></i>
-            <span id="toast-text">Notification</span>
+            <span id="toast-icon-placeholder" class="text-ios-green">●</span>
+            <span id="toast-message-label">Notification</span>
         </div>
     </div>
 
-    <!-- FIREBASE + PEERJS REALTIME P2P APPLICATION LOGIC -->
+    <!-- APPLICATION SCRIPTS (ES Modules for WebRTC & Cloud Room Sync) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // ==========================================
-        // 1. GLOBAL STATE & FIREBASE INITIALIZATION
-        // ==========================================
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'icast-ios18-app';
+        // Global State
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'icast-hub-v1';
         let db = null;
         let auth = null;
         let currentUser = null;
 
-        // Room & PeerJS State
-        let myRoomCode = generateShortCode();
-        let activeRoomCode = myRoomCode;
+        // Broadcast & Multi-Peer State
+        let roomCode = generateCode();
+        let myRole = 'host'; // 'host' | 'viewer'
         let myPeer = null;
         let myPeerId = null;
-        let currentCall = null;
         let localStream = null;
-        let activeCastType = null; // 'screen' | 'camera' | null
-        let currentCameraFacing = 'user'; // 'user' | 'environment'
+        let activeCastType = null; // 'camera' | 'screen' | 'video' | 'canvas' | null
+        let cameraFacing = 'user'; // 'user' | 'environment'
         let isAudioMuted = false;
-        let roomUnsubscribe = null;
-        let chatUnsubscribe = null;
-        let isSyncingVideo = false;
-        let lastReactionTimestamp = 0;
-        let lastSnapshotTimestamp = 0;
 
-        function generateShortCode() {
+        // Multi-Viewer tracking for Host
+        const viewerConnections = new Map(); // peerId -> DataConnection
+        const viewerMediaCalls = new Map();   // peerId -> MediaCall
+
+        // Subscriptions
+        let roomDocUnsub = null;
+        let chatColUnsub = null;
+        let lastReactionTime = 0;
+
+        // Canvas Presenter State
+        let canvas = null;
+        let ctx = null;
+        let isDrawing = false;
+        let currentColor = '#FFFFFF';
+
+        // Utility: 6-char room code
+        function generateCode() {
             const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
-            let code = '';
+            let res = '';
             for (let i = 0; i < 6; i++) {
-                code += chars.charAt(Math.floor(Math.random() * chars.length));
+                res += chars.charAt(Math.floor(Math.random() * chars.length));
             }
-            return code;
+            return res;
         }
 
-        // UI Helper: iOS Toast Notification
-        window.showToast = function(message, iconClass = 'ph-fill ph-check-circle text-ios-green') {
-            const toast = document.getElementById('ios-toast');
-            const toastText = document.getElementById('toast-text');
-            const toastIcon = document.getElementById('toast-icon');
-            toastText.textContent = message;
-            toastIcon.className = `${iconClass} text-base`;
+        // Initialize Lucide icons
+        function refreshIcons() {
+            if (window.lucide) {
+                window.lucide.createIcons();
+            }
+        }
+
+        // Toast Helper
+        window.showToast = function(msg, isSuccess = true) {
+            const toast = document.getElementById('ios-toast-box');
+            document.getElementById('toast-message-label').textContent = msg;
+            document.getElementById('toast-icon-placeholder').className = isSuccess ? 'text-ios-green font-bold' : 'text-ios-orange font-bold';
             toast.classList.remove('opacity-0', 'translate-y-3');
             toast.classList.add('opacity-100', 'translate-y-0');
-            clearTimeout(window._toastTimer);
-            window._toastTimer = setTimeout(() => {
+            clearTimeout(window._toastTimeout);
+            window._toastTimeout = setTimeout(() => {
                 toast.classList.remove('opacity-100', 'translate-y-0');
                 toast.classList.add('opacity-0', 'translate-y-3');
-            }, 3200);
+            }, 3000);
         };
 
-        // UI Helper: Update Dynamic Island Status
-        function updateDynamicIsland(text, statusColor = 'blue', isLive = false) {
-            const statusText = document.getElementById('island-status-text');
-            const dot = document.getElementById('island-dot');
-            const liveBadge = document.getElementById('island-live-badge');
+        // Dynamic Island Status Updater
+        function updateIsland(title, isLive = false, color = 'blue') {
+            document.getElementById('island-title').textContent = title;
+            const dot = document.getElementById('island-pulse-dot');
+            const badge = document.getElementById('island-live-badge');
 
-            statusText.textContent = text;
-
-            const colorMap = {
-                blue: 'bg-ios-blue shadow-[0_0_10px_#0A84FF]',
-                green: 'bg-ios-green shadow-[0_0_10px_#30D158]',
-                red: 'bg-ios-red shadow-[0_0_10px_#FF453A]',
-                purple: 'bg-ios-purple shadow-[0_0_10px_#BF5AF2]',
-                orange: 'bg-ios-orange shadow-[0_0_10px_#FF9F0A]'
+            const colors = {
+                blue: 'bg-ios-blue shadow-[0_0_12px_#007AFF]',
+                green: 'bg-ios-green shadow-[0_0_12px_#34C759]',
+                red: 'bg-ios-red shadow-[0_0_12px_#FF3B30]',
+                purple: 'bg-ios-purple shadow-[0_0_12px_#AF52DE]',
+                orange: 'bg-ios-orange shadow-[0_0_12px_#FF9500]'
             };
-            dot.className = `w-2.5 h-2.5 rounded-full animate-pulse ${colorMap[statusColor] || colorMap.blue}`;
-
+            dot.className = `w-2.5 h-2.5 rounded-full animate-pulse ${colors[color] || colors.blue}`;
+            
             if (isLive) {
-                liveBadge.classList.remove('hidden');
-                liveBadge.classList.add('flex');
+                badge.classList.remove('hidden');
+                badge.classList.add('flex');
             } else {
-                liveBadge.classList.add('hidden');
-                liveBadge.classList.remove('flex');
+                badge.classList.add('hidden');
+                badge.classList.remove('flex');
             }
         }
 
-        window.toggleIslandExpand = function() {
-            const drawer = document.getElementById('island-expanded');
-            drawer.classList.toggle('hidden');
+        window.toggleIslandDrawer = function() {
+            document.getElementById('island-drawer').classList.toggle('hidden');
         };
 
-        // ==========================================
-        // 2. INITIALIZE PEERJS & FIREBASE AUTH/SYNC
-        // ==========================================
+        // 1. BOOTSTRAP PEERJS & FIREBASE
         async function initApp() {
-            document.getElementById('my-room-code').textContent = myRoomCode;
-            document.getElementById('island-my-code').textContent = myRoomCode;
-            document.getElementById('island-active-room').textContent = myRoomCode;
+            document.getElementById('display-room-code').textContent = roomCode;
+            document.getElementById('drawer-room-code').textContent = roomCode;
 
-            // Initialize PeerJS first with a predictable Peer ID based on Room Code
-            initPeerJS(myRoomCode);
+            setupCanvas();
+            initHostPeer(roomCode);
 
-            // Initialize Firebase if config is available
+            // Connect Firebase Firestore for infinite viewers room metadata
             try {
                 if (typeof __firebase_config !== 'undefined' && __firebase_config) {
-                    const firebaseConfig = JSON.parse(__firebase_config);
-                    const app = initializeApp(firebaseConfig);
-                    auth = getAuth(app);
-                    db = getFirestore(app);
+                    const fApp = initializeApp(JSON.parse(__firebase_config));
+                    auth = getAuth(fApp);
+                    db = getFirestore(fApp);
 
-                    // RULE 3: Authenticate FIRST before any Firestore operation
                     if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                         await signInWithCustomToken(auth, __initial_auth_token);
                     } else {
@@ -764,860 +791,803 @@
                     onAuthStateChanged(auth, async (user) => {
                         if (user) {
                             currentUser = user;
-                            document.getElementById('my-uid-display').textContent = `User ID: ${user.uid}`;
-                            await registerRoomInFirestore(myRoomCode);
-                            subscribeToRoom(myRoomCode);
+                            document.getElementById('peer-session-id').textContent = `User UID: ${user.uid.substring(0,6)}...`;
+                            await registerHostRoom();
+                            subscribeToRoom(roomCode);
                         }
                     });
-                } else {
-                    updateDynamicIsland('Ready to Cast • P2P Mode', 'green', false);
                 }
             } catch (err) {
-                console.warn('Firestore fallback mode active:', err);
-                updateDynamicIsland('Ready to Cast • Direct P2P', 'green', false);
+                console.warn('Firebase optional mode:', err);
             }
-
-            setupSyncedVideoListeners();
+            refreshIcons();
         }
 
-        // Initialize PeerJS with deterministic ID so PeerJS works even if Firestore is slow
-        function initPeerJS(code) {
-            const peerIdToUse = `icast18-${code}`;
-            if (myPeer) {
-                myPeer.destroy();
-            }
+        // Host Peer Initialization
+        function initHostPeer(code) {
+            const hostPeerId = `icasthub-${code}`;
+            if (myPeer) myPeer.destroy();
 
-            myPeer = new Peer(peerIdToUse, {
-                debug: 1
-            });
+            myPeer = new Peer(hostPeerId, { debug: 1 });
 
             myPeer.on('open', (id) => {
                 myPeerId = id;
-                updateDynamicIsland(`Ready to Cast • Code: ${code}`, 'green', false);
-                if (currentUser && db) {
-                    registerRoomInFirestore(activeRoomCode);
+                updateIsland(`Host Ready • ${code}`, false, 'green');
+                showToast(`Broadcast Room ${code} Active!`);
+            });
+
+            // MULTI-VIEWER LISTENER: Any viewer connecting via DataChannel
+            myPeer.on('connection', (conn) => {
+                const viewerId = conn.peer;
+                viewerConnections.set(viewerId, conn);
+                updateViewerCounts();
+
+                conn.on('open', () => {
+                    // Send current broadcast mode and initial state to new viewer
+                    conn.send({
+                        type: 'init-sync',
+                        activeCastType,
+                        videoUrl: document.getElementById('media-source-url').value,
+                        currentTime: document.getElementById('synced-core-player').currentTime || 0,
+                        isPaused: document.getElementById('synced-core-player').paused
+                    });
+                });
+
+                conn.on('data', (data) => {
+                    handleViewerIncomingData(data);
+                });
+
+                conn.on('close', () => {
+                    viewerConnections.delete(viewerId);
+                    updateViewerCounts();
+                });
+
+                conn.on('error', () => {
+                    viewerConnections.delete(viewerId);
+                    updateViewerCounts();
+                });
+
+                // If host is currently streaming video, automatically call the new viewer
+                if (localStream) {
+                    const call = myPeer.call(viewerId, localStream);
+                    if (call) viewerMediaCalls.set(viewerId, call);
                 }
             });
 
-            // When partner initiates a WebRTC Media Call to us
-            myPeer.on('call', (incomingCall) => {
-                updateDynamicIsland('Incoming Live Cast Stream...', 'purple', true);
-                showToast('Partner started casting to you!', 'ph-fill ph-screencast text-ios-cyan');
-
-                // Answer with our local stream if we have one, or empty answer to receive video
-                if (localStream) {
-                    incomingCall.answer(localStream);
-                } else {
-                    incomingCall.answer();
-                }
-
-                handleActiveCall(incomingCall);
+            // If a viewer calls the host
+            myPeer.on('call', (call) => {
+                call.answer();
+                call.on('stream', (stream) => {
+                    displayRemoteVideo(stream);
+                });
             });
 
             myPeer.on('error', (err) => {
-                console.warn('PeerJS Notice:', err.type, err);
                 if (err.type === 'unavailable-id') {
-                    // Generate a unique Peer ID and register in Firestore
+                    // Generate fallback peer if room code was taken
                     myPeer = new Peer();
-                    myPeer.on('open', (fallbackId) => {
-                        myPeerId = fallbackId;
-                        if (currentUser && db) registerRoomInFirestore(activeRoomCode);
+                    myPeer.on('open', (id) => {
+                        myPeerId = id;
                     });
-                    myPeer.on('call', (call) => {
-                        call.answer(localStream || undefined);
-                        handleActiveCall(call);
+                }
+            });
+        }
+
+        // Viewer Peer Initialization
+        function initViewerPeer(targetRoomCode) {
+            if (myPeer) myPeer.destroy();
+            myPeer = new Peer();
+
+            myPeer.on('open', (id) => {
+                myPeerId = id;
+                const hostPeerId = `icasthub-${targetRoomCode}`;
+                
+                // Connect DataChannel to Host
+                const conn = myPeer.connect(hostPeerId);
+                conn.on('open', () => {
+                    showToast(`Connected to Broadcast ${targetRoomCode}!`);
+                    updateIsland(`Watching • ${targetRoomCode}`, true, 'green');
+                    document.getElementById('live-connection-tag').classList.remove('hidden');
+                });
+
+                conn.on('data', (data) => {
+                    handleHostBroadcastData(data);
+                });
+
+                conn.on('close', () => {
+                    showToast('Broadcaster ended the session or disconnected', false);
+                    updateIsland('Broadcast Ended', false, 'red');
+                });
+
+                // Listen for Media Calls from Host
+                myPeer.on('call', (call) => {
+                    call.answer(); // Viewer does not need to send stream
+                    call.on('stream', (stream) => {
+                        displayRemoteVideo(stream);
+                        updateIsland('Live Stream Cast', true, 'red');
                     });
-                } else if (err.type === 'peer-unavailable') {
-                    showToast('Partner Peer not online yet — synced via Cloud Room', 'ph-fill ph-info text-ios-orange');
-                }
+                });
             });
         }
 
-        function handleActiveCall(callObj) {
-            if (currentCall && currentCall !== callObj) {
-                currentCall.close();
-            }
-            currentCall = callObj;
-
-            callObj.on('stream', (remoteMediaStream) => {
-                const remoteVideo = document.getElementById('remote-video');
-                const emptyState = document.getElementById('stream-empty-state');
-
-                switchStageMode('webrtc');
-                remoteVideo.srcObject = remoteMediaStream;
-                remoteVideo.classList.remove('hidden');
-                emptyState.classList.add('hidden');
-
-                remoteVideo.play().catch(() => {});
-                updateDynamicIsland('Connected • Live P2P Stream', 'red', true);
-                document.getElementById('stage-title').textContent = 'Live Partner Stream • WebRTC P2P';
-                document.getElementById('room-participants-badge').classList.remove('hidden');
-            });
-
-            callObj.on('close', () => {
-                const remoteVideo = document.getElementById('remote-video');
-                remoteVideo.srcObject = null;
-                remoteVideo.classList.add('hidden');
-                if (!localStream) {
-                    document.getElementById('stream-empty-state').classList.remove('hidden');
-                }
-                updateDynamicIsland(`Connected • Room ${activeRoomCode}`, 'green', false);
-            });
-        }
-
-        // ==========================================
-        // 3. FIRESTORE ROOM DISCOVERY & SYNC ENGINE
-        // ==========================================
-        async function registerRoomInFirestore(roomCode) {
-            if (!db || !currentUser) return;
-            try {
-                const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'cast_rooms', roomCode);
-                const snap = await getDoc(roomRef);
-
-                if (!snap.exists()) {
-                    await setDoc(roomRef, {
-                        roomCode: roomCode,
-                        hostUid: currentUser.uid,
-                        hostPeerId: myPeerId || `icast18-${roomCode}`,
-                        guestUid: '',
-                        guestPeerId: '',
-                        activeCasterPeerId: '',
-                        stageMode: 'webrtc',
-                        sharedUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-                        mediaType: 'mp4',
-                        videoState: 'paused',
-                        videoTime: 0,
-                        lastReaction: null,
-                        snapshotData: null,
-                        updatedAt: Date.now()
-                    });
-                } else {
-                    const data = snap.data();
-                    if (data.hostUid === currentUser.uid) {
-                        await updateDoc(roomRef, {
-                            hostPeerId: myPeerId || `icast18-${roomCode}`,
-                            updatedAt: Date.now()
-                        });
-                    } else {
-                        await updateDoc(roomRef, {
-                            guestUid: currentUser.uid,
-                            guestPeerId: myPeerId || '',
-                            updatedAt: Date.now()
-                        });
-                    }
-                }
-            } catch (e) {
-                console.error('Error registering room:', e);
-            }
-        }
-
-        function subscribeToRoom(roomCode) {
-            if (!db || !currentUser) return;
-            if (roomUnsubscribe) roomUnsubscribe();
-            if (chatUnsubscribe) chatUnsubscribe();
-
-            const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'cast_rooms', roomCode);
-            roomUnsubscribe = onSnapshot(roomRef, (docSnap) => {
-                if (!docSnap.exists()) return;
-                const data = docSnap.data();
-
-                // Show linked indicator if both host and guest are present
-                if (data.hostUid && data.guestUid) {
-                    document.getElementById('room-participants-badge').classList.remove('hidden');
-                }
-
-                // If we are currently streaming and a guest joined with a peerId, call them automatically
-                if (localStream && data.guestPeerId && data.hostUid === currentUser.uid && (!currentCall || !currentCall.open)) {
-                    connectToRemotePeer(data.guestPeerId);
-                }
-
-                // Sync Stage Mode if changed by partner
-                if (data.stageMode === 'cobrowse' && data.sharedUrl) {
-                    applyRemoteMediaSync(data);
-                }
-
-                // Check for incoming floating emoji reaction
-                if (data.lastReaction && data.lastReaction.timestamp > lastReactionTimestamp) {
-                    lastReactionTimestamp = data.lastReaction.timestamp;
-                    if (data.lastReaction.senderUid !== currentUser.uid) {
-                        spawnFloatingEmoji(data.lastReaction.emoji);
-                    }
-                }
-
-                // Check for incoming instant screen snapshot (Android fallback)
-                if (data.snapshotData && data.snapshotData.timestamp > lastSnapshotTimestamp) {
-                    lastSnapshotTimestamp = data.snapshotData.timestamp;
-                    if (data.snapshotData.senderUid !== currentUser.uid && data.snapshotData.dataUrl) {
-                        displaySharedSnapshot(data.snapshotData.dataUrl, 'Partner beamed a Live Screen Snapshot');
-                    }
-                }
-            }, (err) => {
-                console.error('Room snapshot error:', err);
-            });
-
-            // Subscribe to Room Chat Messages (RULE 2: Simple collection query, sort in JS memory)
-            const chatCol = collection(db, 'artifacts', appId, 'public', 'data', `cast_chat_${roomCode}`);
-            chatUnsubscribe = onSnapshot(chatCol, (querySnap) => {
-                const msgs = [];
-                querySnap.forEach((d) => msgs.push({ id: d.id, ...d.data() }));
-                msgs.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-                renderChatMessages(msgs);
-            }, (err) => {
-                console.error('Chat snapshot error:', err);
-            });
-        }
-
-        // Join Partner's Room Code
-        window.joinRoomByCode = async function() {
-            const input = document.getElementById('join-code-input');
-            const targetCode = input.value.trim().toUpperCase();
-            if (!targetCode || targetCode.length < 4) {
-                showToast('Please enter a valid Room Code', 'ph-fill ph-warning-circle text-ios-orange');
-                return;
-            }
-
-            activeRoomCode = targetCode;
-            document.getElementById('island-active-room').textContent = targetCode;
-            updateDynamicIsland(`Connecting to Room ${targetCode}...`, 'orange', false);
-
-            // Register & Subscribe in Firestore
-            if (db && currentUser) {
-                await registerRoomInFirestore(targetCode);
-                subscribeToRoom(targetCode);
-
-                const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'cast_rooms', targetCode);
-                const snap = await getDoc(roomRef);
-                if (snap.exists()) {
-                    const data = snap.data();
-                    const targetPeer = data.hostPeerId || `icast18-${targetCode}`;
-                    if (targetPeer && targetPeer !== myPeerId) {
-                        connectToRemotePeer(targetPeer);
-                    }
-                }
-            } else {
-                // Direct PeerJS connection using deterministic ID
-                connectToRemotePeer(`icast18-${targetCode}`);
-            }
-
-            showToast(`Joined Room ${targetCode}! Ready to Cast`, 'ph-fill ph-link text-ios-green');
-            updateDynamicIsland(`Connected • Room ${targetCode}`, 'green', false);
-        };
-
-        function connectToRemotePeer(remotePeerId) {
-            if (!myPeer || !remotePeerId || remotePeerId === myPeerId) return;
-
-            // If we have an active local stream, call the remote peer immediately
-            if (localStream) {
-                const call = myPeer.call(remotePeerId, localStream);
-                if (call) handleActiveCall(call);
-            } else {
-                // Create a silent audio/canvas placeholder track so we can initiate a two-way WebRTC call even before sharing our screen
+        function updateViewerCounts() {
+            const count = viewerConnections.size + 1; // +1 for host
+            document.getElementById('island-viewer-count').textContent = count;
+            document.getElementById('viewers-count-badge').textContent = `${count} Watching`;
+            document.getElementById('drawer-audience-count').textContent = `${viewerConnections.size} Viewers Connected`;
+            document.getElementById('members-list-subtitle').textContent = `${viewerConnections.size} external audience members connected`;
+            
+            // Sync to Firestore if host
+            if (myRole === 'host' && db && currentUser) {
                 try {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = 640;
-                    canvas.height = 360;
-                    const ctx = canvas.getContext('2d');
-                    ctx.fillStyle = '#0A84FF';
-                    ctx.fillRect(0, 0, 640, 360);
-                    ctx.fillStyle = '#ffffff';
-                    ctx.font = 'bold 26px sans-serif';
-                    ctx.fillText(`Connected from Room ${myRoomCode}`, 130, 185);
-                    const placeholderStream = canvas.captureStream(5);
-                    const call = myPeer.call(remotePeerId, placeholderStream);
-                    if (call) handleActiveCall(call);
-                } catch (e) {
-                    console.warn('Stream handshake notice:', e);
-                }
+                    const ref = doc(db, 'artifacts', appId, 'public', 'data', 'cast_rooms', roomCode);
+                    updateDoc(ref, { viewerCount: count, updatedAt: Date.now() });
+                } catch(e) {}
             }
         }
 
-        // ==========================================
-        // 4. THREE CASTING MODES (SCREEN, CAMERA, CO-BROWSE)
-        // ==========================================
+        // 2. BROADCASTING TO ALL VIEWERS VIA DATA CHANNELS
+        function broadcastToAllViewers(payload) {
+            viewerConnections.forEach((conn) => {
+                if (conn && conn.open) {
+                    try {
+                        conn.send(payload);
+                    } catch(e) {}
+                }
+            });
+        }
 
-        // MODE A: Screen / App Cast (getDisplayMedia)
-        window.startScreenCast = async function() {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
-                showToast('OS Screen Capture restricted on this mobile browser — opening Android Cast Guide!', 'ph-fill ph-android-logo text-ios-orange');
-                openAndroidModal();
+        function callAllViewersWithStream(stream) {
+            viewerConnections.forEach((conn, peerId) => {
+                if (myPeer) {
+                    const call = myPeer.call(peerId, stream);
+                    if (call) viewerMediaCalls.set(peerId, call);
+                }
+            });
+        }
+
+        // 3. BROADCAST MODES
+
+        // MODE A: Android Mobile Cam / Reverse Mirror Cast
+        window.startCameraBroadcast = async function() {
+            if (myRole !== 'host') {
+                showToast('Only Host can start broadcasts!', false);
                 return;
             }
 
             try {
-                const stream = await navigator.mediaDevices.getDisplayMedia({
-                    video: {
-                        cursor: 'always',
-                        frameRate: { ideal: 30, max: 60 }
-                    },
-                    audio: true
-                });
+                if (localStream) stopAllActiveBroadcasts();
 
-                // Detect when user clicks "Stop sharing" in browser bar
-                stream.getVideoTracks()[0].onended = () => {
-                    stopAllStreams();
-                };
-
-                activeCastType = 'screen';
-                await attachAndBroadcastStream(stream, 'Screen Mirroring Live');
-                updateControlCenterUI();
-                showToast('Screen Casting is now LIVE!', 'ph-fill ph-screencast text-ios-blue');
-            } catch (err) {
-                console.warn('Screen cast cancelled or unsupported:', err);
-                showToast('Screen Share unavailable on this mobile browser. Use Web & Video Cast or Camera Cast!', 'ph-fill ph-info text-ios-orange');
-            }
-        };
-
-        window.toggleScreenCast = function() {
-            if (activeCastType === 'screen') {
-                stopAllStreams();
-            } else {
-                startScreenCast();
-            }
-        };
-
-        // MODE B: Live Camera & Audio Cast (Works natively on ALL Android & iOS phones)
-        window.startCameraCast = async function() {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                showToast('Camera access not supported in this context', 'ph-fill ph-warning text-ios-red');
-                return;
-            }
-
-            try {
                 const stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: currentCameraFacing,
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    },
+                    video: { facingMode: cameraFacing, width: { ideal: 1280 }, height: { ideal: 720 } },
                     audio: true
                 });
 
+                localStream = stream;
                 activeCastType = 'camera';
-                document.getElementById('flip-cam-btn').classList.remove('hidden');
-                document.getElementById('flip-cam-btn').classList.add('flex');
 
-                await attachAndBroadcastStream(stream, 'Live Camera Cast');
-                updateControlCenterUI();
-                showToast('Live Camera Cast started!', 'ph-fill ph-video-camera text-ios-green');
+                showStageSection('webrtc');
+                const videoEl = document.getElementById('broadcast-video-feed');
+                videoEl.srcObject = stream;
+                videoEl.muted = true; // Host mutes local playback to avoid echo
+
+                // Show local PIP
+                const localPip = document.getElementById('host-local-pip');
+                localPip.classList.remove('hidden');
+                document.getElementById('host-local-video').srcObject = stream;
+
+                // Show Flip camera button on mobile
+                const flipBtn = document.getElementById('btn-flip-camera');
+                flipBtn.classList.remove('hidden');
+                flipBtn.classList.add('flex');
+
+                // Call all connected viewers
+                callAllViewersWithStream(stream);
+
+                // Inform viewers via data channel
+                broadcastToAllViewers({ type: 'mode-switch', mode: 'camera' });
+
+                updateIsland('Broadcasting Camera LIVE', true, 'green');
+                document.getElementById('tile-camera').classList.add('active-green');
+                document.getElementById('tile-camera-sub').textContent = 'Broadcasting';
+                document.getElementById('current-feed-name').textContent = 'Camera Feed';
+                document.getElementById('stage-title-text').textContent = 'Live Android / Web Camera Mirror';
+
+                showToast('Camera feed broadcasting to all viewers!');
             } catch (err) {
                 console.error('Camera error:', err);
-                showToast('Please allow Camera & Mic permissions to cast', 'ph-fill ph-warning text-ios-red');
+                showToast('Camera permission denied or unavailable', false);
             }
+            refreshIcons();
         };
 
-        window.toggleCameraCast = function() {
-            if (activeCastType === 'camera') {
-                stopAllStreams();
-            } else {
-                startCameraCast();
-            }
+        window.flipMobileCamera = async function() {
+            cameraFacing = cameraFacing === 'user' ? 'environment' : 'user';
+            await startCameraBroadcast();
+            showToast(`Switched to ${cameraFacing === 'environment' ? 'Back' : 'Front'} Camera`);
         };
 
-        window.switchCameraFacing = async function() {
-            currentCameraFacing = currentCameraFacing === 'user' ? 'environment' : 'user';
-            if (activeCastType === 'camera') {
-                await startCameraCast();
-                showToast(`Switched to ${currentCameraFacing === 'environment' ? 'Back' : 'Front'} Camera`);
-            }
-        };
-
-        // Attach Local Stream & Broadcast via PeerJS to Partner
-        async function attachAndBroadcastStream(stream, label) {
-            if (localStream) {
-                localStream.getTracks().forEach(t => t.stop());
-            }
-            localStream = stream;
-
-            switchStageMode('webrtc');
-
-            const localVideo = document.getElementById('local-video');
-            const localPreviewCard = document.getElementById('local-preview-card');
-            const remoteVideo = document.getElementById('remote-video');
-            const emptyState = document.getElementById('stream-empty-state');
-
-            localVideo.srcObject = stream;
-            localPreviewCard.classList.remove('hidden');
-
-            // If no remote stream is playing yet, mirror our cast on the main stage too
-            if (!remoteVideo.srcObject) {
-                remoteVideo.srcObject = stream;
-                remoteVideo.muted = true; // prevent feedback loop on own stream
-                remoteVideo.classList.remove('hidden');
-                emptyState.classList.add('hidden');
-            }
-
-            updateDynamicIsland(`${label} • Room ${activeRoomCode}`, 'red', true);
-            document.getElementById('stage-title').textContent = `${label} • Broadcasting`;
-
-            // Call connected partner in Firestore room or deterministic Peer ID
-            if (db && currentUser) {
-                const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'cast_rooms', activeRoomCode);
-                const snap = await getDoc(roomRef);
-                if (snap.exists()) {
-                    const data = snap.data();
-                    const targetPeer = (data.hostUid === currentUser.uid) ? data.guestPeerId : data.hostPeerId;
-                    if (targetPeer && targetPeer !== myPeerId) {
-                        const call = myPeer.call(targetPeer, stream);
-                        if (call) handleActiveCall(call);
-                    }
-                }
-            }
-
-            // Also attempt direct deterministic Peer call if we joined someone else's code
-            if (activeRoomCode !== myRoomCode) {
-                const directTarget = `icast18-${activeRoomCode}`;
-                if (directTarget !== myPeerId) {
-                    const call = myPeer.call(directTarget, stream);
-                    if (call) handleActiveCall(call);
-                }
-            }
-        }
-
-        // Stop All Active Streams
-        window.stopAllStreams = function() {
-            if (localStream) {
-                localStream.getTracks().forEach(track => track.stop());
-                localStream = null;
-            }
-            if (currentCall) {
-                currentCall.close();
-                currentCall = null;
-            }
-            activeCastType = null;
-            document.getElementById('local-preview-card').classList.add('hidden');
-            document.getElementById('flip-cam-btn').classList.add('hidden');
-            document.getElementById('remote-video').classList.add('hidden');
-            document.getElementById('remote-video').srcObject = null;
-            document.getElementById('stream-empty-state').classList.remove('hidden');
-
-            updateControlCenterUI();
-            updateDynamicIsland(`Ready to Cast • Code: ${activeRoomCode}`, 'green', false);
-            document.getElementById('stage-title').textContent = 'Stream Ended • Ready';
-            showToast('Cast stopped', 'ph-fill ph-power text-ios-red');
-        };
-
-        // Mute / Unmute Microphone
-        window.toggleMuteAudio = function() {
-            isAudioMuted = !isAudioMuted;
-            if (localStream) {
-                localStream.getAudioTracks().forEach(track => {
-                    track.enabled = !isAudioMuted;
-                });
-            }
-            updateControlCenterUI();
-            showToast(isAudioMuted ? 'Microphone Muted' : 'Microphone Unmuted', isAudioMuted ? 'ph-fill ph-microphone-slash text-ios-red' : 'ph-fill ph-microphone text-ios-green');
-        };
-
-        function updateControlCenterUI() {
-            const screenBtn = document.getElementById('cc-screen-btn');
-            const screenSub = document.getElementById('cc-screen-sub');
-            const camBtn = document.getElementById('cc-cam-btn');
-            const camSub = document.getElementById('cc-cam-sub');
-            const micBtn = document.getElementById('cc-mic-btn');
-            const micSub = document.getElementById('cc-mic-sub');
-
-            // Screen Tile
-            if (activeCastType === 'screen') {
-                screenBtn.classList.add('active-blue');
-                screenSub.textContent = 'Broadcasting';
-            } else {
-                screenBtn.classList.remove('active-blue');
-                screenSub.textContent = 'Off';
-            }
-
-            // Camera Tile
-            if (activeCastType === 'camera') {
-                camBtn.classList.add('active-green');
-                camSub.textContent = 'Live On Air';
-            } else {
-                camBtn.classList.remove('active-green');
-                camSub.textContent = 'Off';
-            }
-
-            // Mic Tile
-            if (isAudioMuted) {
-                micBtn.classList.add('active-red');
-                micSub.textContent = 'Muted';
-            } else {
-                micBtn.classList.remove('active-red');
-                micSub.textContent = 'Active';
-            }
-        }
-
-        // ==========================================
-        // 5. MODE C: ANDROID CO-BROWSE & SYNCED VIDEO CASTER
-        // ==========================================
-        window.switchStageMode = function(mode) {
-            const webrtcStage = document.getElementById('webrtc-stage');
-            const cobrowseStage = document.getElementById('cobrowse-stage');
-            const modeBtnCobrowse = document.getElementById('mode-btn-cobrowse');
-
-            if (mode === 'cobrowse') {
-                webrtcStage.classList.add('hidden');
-                cobrowseStage.classList.remove('hidden');
-                cobrowseStage.classList.add('flex');
-                modeBtnCobrowse.classList.add('active-purple');
-                document.getElementById('stage-title').textContent = 'Synced Android & Web Co-Browse Player';
-                updateDynamicIsland('Co-Browse & Video Sync Active', 'purple', true);
-            } else {
-                cobrowseStage.classList.add('hidden');
-                cobrowseStage.classList.remove('flex');
-                webrtcStage.classList.remove('hidden');
-                modeBtnCobrowse.classList.remove('active-purple');
-                document.getElementById('stage-title').textContent = 'Live WebRTC Stream Stage';
-            }
-        };
-
-        window.loadPresetMedia = async function(type, url) {
-            document.getElementById('cobrowse-url-input').value = url;
-            await syncMediaUrlToRoom(type, url);
-        };
-
-        window.syncMediaUrlToRoom = async function(forcedType = null, forcedUrl = null) {
-            const rawUrl = forcedUrl || document.getElementById('cobrowse-url-input').value.trim();
-            if (!rawUrl) {
-                showToast('Paste a Video, YouTube, or Website URL first', 'ph-fill ph-warning text-ios-orange');
+        // MODE B: Native Screen Cast (Desktop / Supported WebKit)
+        window.startNativeScreenCast = async function() {
+            if (myRole !== 'host') {
+                showToast('Only Host can start screen cast!', false);
                 return;
             }
 
-            let url = rawUrl;
-            if (!/^https?:\/\//i.test(url)) {
-                url = 'https://' + url;
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+                showToast('Android Mobile Chrome blocks screen cast. Use Sync Video or Camera!', false);
+                openAndroidHelperModal();
+                return;
             }
 
-            let mediaType = forcedType || 'iframe';
-            if (url.match(/\.(mp4|webm|ogg)(\?.*)?$/i)) {
-                mediaType = 'mp4';
-            } else if (url.includes('youtube.com/watch?v=') || url.includes('youtu.be/')) {
-                mediaType = 'youtube';
-                const vidMatch = url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-                if (vidMatch && vidMatch[1]) {
-                    url = `https://www.youtube.com/embed/${vidMatch[1]}?autoplay=1`;
-                }
-            }
+            try {
+                if (localStream) stopAllActiveBroadcasts();
 
-            renderSyncedMediaLocally(mediaType, url);
+                const stream = await navigator.mediaDevices.getDisplayMedia({
+                    video: { frameRate: 30 },
+                    audio: true
+                });
 
-            if (db && currentUser) {
-                try {
-                    const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'cast_rooms', activeRoomCode);
-                    await updateDoc(roomRef, {
-                        stageMode: 'cobrowse',
-                        sharedUrl: url,
-                        mediaType: mediaType,
-                        videoState: 'playing',
-                        videoTime: 0,
-                        updatedAt: Date.now()
-                    });
-                    showToast('Casted URL to partner in real-time!', 'ph-fill ph-broadcast text-ios-purple');
-                } catch (e) {
-                    console.warn('Sync URL error:', e);
-                }
-            }
-        };
-
-        function renderSyncedMediaLocally(mediaType, url) {
-            switchStageMode('cobrowse');
-            const videoPlayer = document.getElementById('synced-video-player');
-            const iframe = document.getElementById('synced-iframe');
-
-            if (mediaType === 'mp4') {
-                iframe.classList.add('hidden');
-                videoPlayer.classList.remove('hidden');
-                if (videoPlayer.src !== url) {
-                    videoPlayer.src = url;
-                }
-            } else {
-                videoPlayer.pause();
-                videoPlayer.classList.add('hidden');
-                iframe.classList.remove('hidden');
-                if (iframe.src !== url) {
-                    iframe.src = url;
-                }
-            }
-        }
-
-        function applyRemoteMediaSync(data) {
-            const videoPlayer = document.getElementById('synced-video-player');
-            renderSyncedMediaLocally(data.mediaType || 'mp4', data.sharedUrl);
-
-            if (data.mediaType === 'mp4' && videoPlayer) {
-                isSyncingVideo = true;
-                if (typeof data.videoTime === 'number' && Math.abs(videoPlayer.currentTime - data.videoTime) > 2.5) {
-                    videoPlayer.currentTime = data.videoTime;
-                }
-                if (data.videoState === 'playing' && videoPlayer.paused) {
-                    videoPlayer.play().catch(() => {});
-                } else if (data.videoState === 'paused' && !videoPlayer.paused) {
-                    videoPlayer.pause();
-                }
-                setTimeout(() => { isSyncingVideo = false; }, 450);
-            }
-        }
-
-        function setupSyncedVideoListeners() {
-            const videoPlayer = document.getElementById('synced-video-player');
-            if (!videoPlayer) return;
-
-            const pushVideoState = async (state) => {
-                if (isSyncingVideo || !db || !currentUser) return;
-                try {
-                    const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'cast_rooms', activeRoomCode);
-                    await updateDoc(roomRef, {
-                        stageMode: 'cobrowse',
-                        videoState: state,
-                        videoTime: videoPlayer.currentTime,
-                        updatedAt: Date.now()
-                    });
-                } catch (e) {}
-            };
-
-            videoPlayer.addEventListener('play', () => pushVideoState('playing'));
-            videoPlayer.addEventListener('pause', () => pushVideoState('paused'));
-            videoPlayer.addEventListener('seeked', () => pushVideoState(videoPlayer.paused ? 'paused' : 'playing'));
-        }
-
-        // ==========================================
-        // 6. ANDROID SCREENSHOT / SNAPSHOT BEAMER
-        // ==========================================
-        window.triggerPhotoScreenShare = function() {
-            document.getElementById('screenshot-file-input').click();
-        };
-
-        window.handleScreenshotUpload = function(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = async function() {
-                    // Compress onto canvas so it fits comfortably in Firestore (< 350KB)
-                    const canvas = document.createElement('canvas');
-                    const maxDim = 960;
-                    let w = img.width;
-                    let h = img.height;
-                    if (w > maxDim || h > maxDim) {
-                        if (w > h) {
-                            h = Math.round((h * maxDim) / w);
-                            w = maxDim;
-                        } else {
-                            w = Math.round((w * maxDim) / h);
-                            h = maxDim;
-                        }
-                    }
-                    canvas.width = w;
-                    canvas.height = h;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, w, h);
-                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.72);
-
-                    displaySharedSnapshot(compressedDataUrl, 'Your Android Screen Snapshot (Live Casted)');
-                    await broadcastSnapshotToRoom(compressedDataUrl);
+                stream.getVideoTracks()[0].onended = () => {
+                    stopAllActiveBroadcasts();
                 };
-                img.src = e.target.result;
+
+                localStream = stream;
+                activeCastType = 'screen';
+
+                showStageSection('webrtc');
+                const videoEl = document.getElementById('broadcast-video-feed');
+                videoEl.srcObject = stream;
+                videoEl.muted = true;
+
+                callAllViewersWithStream(stream);
+                broadcastToAllViewers({ type: 'mode-switch', mode: 'screen' });
+
+                updateIsland('Screen Broadcast LIVE', true, 'blue');
+                document.getElementById('tile-screen').classList.add('active-blue');
+                document.getElementById('tile-screen-sub').textContent = 'Mirroring';
+                document.getElementById('current-feed-name').textContent = 'OS Screen Mirror';
+                document.getElementById('stage-title-text').textContent = 'Live Screen Sharing';
+
+                showToast('Screen cast broadcasting to all viewers!');
+            } catch (err) {
+                showToast('Screen share cancelled or blocked by mobile browser', false);
+            }
+            refreshIcons();
+        };
+
+        // MODE C: Synced Video Player (MP4 / YouTube / Local phone videos)
+        window.startSyncedVideoMode = function() {
+            activeCastType = 'video';
+            showStageSection('video');
+            broadcastToAllViewers({ type: 'mode-switch', mode: 'video' });
+
+            updateIsland('Video Sync Room Active', true, 'purple');
+            document.getElementById('tile-video').classList.add('active-purple');
+            document.getElementById('tile-video-sub').textContent = 'Synced';
+            document.getElementById('current-feed-name').textContent = 'Synced Video Player';
+            document.getElementById('stage-title-text').textContent = 'Synced Movie & Video Stream';
+            refreshIcons();
+        };
+
+        window.broadcastLoadMediaUrl = function() {
+            const url = document.getElementById('media-source-url').value.trim();
+            if (!url) return;
+            const player = document.getElementById('synced-core-player');
+            player.src = url;
+            player.load();
+            player.play().catch(() => {});
+
+            broadcastToAllViewers({
+                type: 'video-load',
+                url: url
+            });
+            showToast('Casted video to all viewers!');
+        };
+
+        window.loadSampleVideo = function(url, title) {
+            document.getElementById('media-source-url').value = url;
+            broadcastLoadMediaUrl();
+            showToast(`Loaded ${title}`);
+        };
+
+        window.handleLocalVideoSelected = function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const objUrl = URL.createObjectURL(file);
+            const player = document.getElementById('synced-core-player');
+            player.src = objUrl;
+            player.load();
+            player.play().catch(() => {});
+
+            showToast(`Playing local video: ${file.name}`);
+            // Note for local video: prompt viewers or beam data URL
+            broadcastToAllViewers({
+                type: 'video-info',
+                message: `Host loaded local video "${file.name}". For synced co-play, use a direct video URL or sample.`
+            });
+        };
+
+        window.handleHostVideoAction = function(action) {
+            if (myRole !== 'host') return;
+            const player = document.getElementById('synced-core-player');
+            broadcastToAllViewers({
+                type: 'video-sync',
+                action: action,
+                time: player.currentTime
+            });
+        };
+
+        // MODE D: Interactive Live Canvas & Photo Screenshot Beamer
+        window.startInteractiveCanvasPresenter = function() {
+            activeCastType = 'canvas';
+            showStageSection('canvas');
+            broadcastToAllViewers({ type: 'mode-switch', mode: 'canvas' });
+
+            updateIsland('Whiteboard Presenter', true, 'orange');
+            document.getElementById('tile-canvas').classList.add('active-orange');
+            document.getElementById('tile-canvas-sub').textContent = 'Presenting';
+            document.getElementById('current-feed-name').textContent = 'Live Whiteboard';
+            document.getElementById('stage-title-text').textContent = 'Interactive Whiteboard & Screenshot Presenter';
+            refreshIcons();
+        };
+
+        function setupCanvas() {
+            canvas = document.getElementById('presenter-canvas');
+            ctx = canvas.getContext('2d');
+            canvas.width = 960;
+            canvas.height = 540;
+            ctx.fillStyle = '#0a0a0c';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Pointer event listeners
+            let lastX = 0, lastY = 0;
+
+            function getCanvasPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                return {
+                    x: (clientX - rect.left) * scaleX,
+                    y: (clientY - rect.top) * scaleY
+                };
+            }
+
+            function startDraw(e) {
+                if (myRole !== 'host') return;
+                isDrawing = true;
+                const pos = getCanvasPos(e);
+                lastX = pos.x;
+                lastY = pos.y;
+            }
+
+            function draw(e) {
+                if (!isDrawing || myRole !== 'host') return;
+                const pos = getCanvasPos(e);
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(pos.x, pos.y);
+                ctx.strokeStyle = currentColor;
+                ctx.lineWidth = 4;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+
+                // Broadcast draw stroke coordinates
+                broadcastToAllViewers({
+                    type: 'canvas-stroke',
+                    x0: lastX,
+                    y0: lastY,
+                    x1: pos.x,
+                    y1: pos.y,
+                    color: currentColor,
+                    width: 4
+                });
+
+                lastX = pos.x;
+                lastY = pos.y;
+            }
+
+            function stopDraw() {
+                isDrawing = false;
+            }
+
+            canvas.addEventListener('mousedown', startDraw);
+            canvas.addEventListener('mousemove', draw);
+            window.addEventListener('mouseup', stopDraw);
+
+            canvas.addEventListener('touchstart', startDraw, { passive: true });
+            canvas.addEventListener('touchmove', draw, { passive: true });
+            window.addEventListener('touchend', stopDraw);
+        }
+
+        window.setDrawColor = function(color) {
+            currentColor = color;
+            showToast(`Color selected: ${color}`);
+        };
+
+        window.clearLiveCanvas = function() {
+            if (myRole !== 'host') return;
+            ctx.fillStyle = '#0a0a0c';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            broadcastToAllViewers({ type: 'canvas-clear' });
+            showToast('Whiteboard cleared');
+        };
+
+        window.triggerScreenshotShare = function() {
+            document.getElementById('canvas-image-file').click();
+        };
+
+        window.handleCanvasImageUpload = function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const img = new Image();
+                img.onload = function() {
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                    broadcastToAllViewers({
+                        type: 'canvas-image',
+                        dataUrl: dataUrl
+                    });
+                    showToast('Screenshot beamed to all joined viewers!');
+                };
+                img.src = evt.target.result;
             };
             reader.readAsDataURL(file);
         };
 
-        // Beam current video frame or stage snapshot to partner
-        window.sendQuickScreenSnapshot = async function() {
-            const remoteVid = document.getElementById('remote-video');
-            const localVid = document.getElementById('local-video');
-            const syncedVid = document.getElementById('synced-video-player');
-
-            let activeVid = null;
-            if (localVid && localVid.srcObject) activeVid = localVid;
-            else if (remoteVid && remoteVid.srcObject) activeVid = remoteVid;
-            else if (syncedVid && !syncedVid.classList.contains('hidden')) activeVid = syncedVid;
-
-            if (activeVid && activeVid.videoWidth > 0) {
-                try {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = 800;
-                    canvas.height = Math.round((activeVid.videoHeight / activeVid.videoWidth) * 800) || 450;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(activeVid, 0, 0, canvas.width, canvas.height);
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
-                    displaySharedSnapshot(dataUrl, 'Captured Live Stream Frame');
-                    await broadcastSnapshotToRoom(dataUrl);
-                    return;
-                } catch (e) {}
+        // RESET / STOP
+        window.stopAllActiveBroadcasts = function() {
+            if (localStream) {
+                localStream.getTracks().forEach(t => t.stop());
+                localStream = null;
             }
-            // Otherwise open file picker so Android user can beam any screenshot from their phone
-            triggerPhotoScreenShare();
+            viewerMediaCalls.forEach(call => call.close());
+            viewerMediaCalls.clear();
+
+            activeCastType = null;
+            showStageSection('empty');
+
+            document.getElementById('host-local-pip').classList.add('hidden');
+            document.getElementById('btn-flip-camera').classList.add('hidden');
+            document.getElementById('tile-camera').classList.remove('active-green');
+            document.getElementById('tile-video').classList.remove('active-purple');
+            document.getElementById('tile-canvas').classList.remove('active-orange');
+            document.getElementById('tile-screen').classList.remove('active-blue');
+
+            document.getElementById('tile-camera-sub').textContent = 'Live Mirror';
+            document.getElementById('tile-video-sub').textContent = 'MP4 / Local';
+            document.getElementById('tile-canvas-sub').textContent = 'Draw & Photos';
+            document.getElementById('tile-screen-sub').textContent = 'OS Mirror';
+
+            document.getElementById('current-feed-name').textContent = 'Idle';
+            document.getElementById('stage-title-text').textContent = 'Waiting to broadcast or join...';
+
+            broadcastToAllViewers({ type: 'mode-switch', mode: 'empty' });
+            updateIsland(`Host Ready • ${roomCode}`, false, 'green');
+            showToast('Broadcast stopped');
+            refreshIcons();
         };
 
-        async function broadcastSnapshotToRoom(dataUrl) {
+        // 4. HANDLING VIEWER INCOMING DATA (Chat, Emojis, Join)
+        function handleViewerIncomingData(data) {
+            if (data.type === 'chat') {
+                renderChatMessage(data.sender, data.text, false);
+                // Relayed to all other viewers
+                broadcastToAllViewers(data);
+            } else if (data.type === 'emoji') {
+                spawnFloatingEmoji(data.emoji);
+                // Relayed to all other viewers
+                broadcastToAllViewers(data);
+            }
+        }
+
+        // 5. HANDLING BROADCAST DATA ON VIEWER SIDE
+        function handleHostBroadcastData(data) {
+            if (data.type === 'mode-switch') {
+                showStageSection(data.mode);
+            } else if (data.type === 'video-load') {
+                showStageSection('video');
+                const player = document.getElementById('synced-core-player');
+                player.src = data.url;
+                player.play().catch(() => {});
+                showToast('Host loaded new video stream!');
+            } else if (data.type === 'video-sync') {
+                const player = document.getElementById('synced-core-player');
+                if (data.action === 'play') {
+                    player.currentTime = data.time;
+                    player.play().catch(() => {});
+                } else if (data.action === 'pause') {
+                    player.pause();
+                } else if (data.action === 'seek') {
+                    player.currentTime = data.time;
+                }
+            } else if (data.type === 'canvas-stroke') {
+                showStageSection('canvas');
+                ctx.beginPath();
+                ctx.moveTo(data.x0, data.y0);
+                ctx.lineTo(data.x1, data.y1);
+                ctx.strokeStyle = data.color;
+                ctx.lineWidth = data.width;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+            } else if (data.type === 'canvas-clear') {
+                ctx.fillStyle = '#0a0a0c';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            } else if (data.type === 'canvas-image') {
+                showStageSection('canvas');
+                const img = new Image();
+                img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                img.src = data.dataUrl;
+            } else if (data.type === 'emoji') {
+                spawnFloatingEmoji(data.emoji);
+            } else if (data.type === 'chat') {
+                renderChatMessage(data.sender, data.text, false);
+            } else if (data.type === 'init-sync') {
+                if (data.activeCastType) showStageSection(data.activeCastType);
+                if (data.videoUrl) {
+                    const p = document.getElementById('synced-core-player');
+                    p.src = data.videoUrl;
+                    p.currentTime = data.currentTime;
+                    if (!data.isPaused) p.play().catch(() => {});
+                }
+            }
+        }
+
+        function showStageSection(mode) {
+            const emptyEl = document.getElementById('empty-stage-state');
+            const videoEl = document.getElementById('broadcast-video-feed');
+            const mediaBox = document.getElementById('synced-media-box');
+            const canvasBox = document.getElementById('interactive-canvas-box');
+
+            emptyEl.classList.add('hidden');
+            videoEl.classList.add('hidden');
+            mediaBox.classList.add('hidden');
+            canvasBox.classList.add('hidden');
+
+            if (mode === 'camera' || mode === 'screen' || mode === 'webrtc') {
+                videoEl.classList.remove('hidden');
+            } else if (mode === 'video') {
+                mediaBox.classList.remove('hidden');
+                mediaBox.classList.add('flex');
+            } else if (mode === 'canvas') {
+                canvasBox.classList.remove('hidden');
+                canvasBox.classList.add('flex');
+            } else {
+                emptyEl.classList.remove('hidden');
+            }
+        }
+
+        function displayRemoteVideo(stream) {
+            showStageSection('webrtc');
+            const vid = document.getElementById('broadcast-video-feed');
+            vid.srcObject = stream;
+            vid.muted = false;
+            vid.play().catch(() => {});
+        }
+
+        // 6. VIEWER JOIN ACTION
+        window.joinAsViewer = function() {
+            const codeInput = document.getElementById('viewer-code-input').value.trim().toUpperCase();
+            if (!codeInput || codeInput.length < 4) {
+                showToast('Please enter a valid 6-char room code', false);
+                return;
+            }
+
+            myRole = 'viewer';
+            roomCode = codeInput;
+
+            document.getElementById('display-room-code').textContent = codeInput;
+            document.getElementById('drawer-room-code').textContent = codeInput;
+            document.getElementById('role-pill-badge').textContent = 'Viewer Mode';
+            document.getElementById('role-indicator-text').textContent = 'Audience Member';
+            document.getElementById('cc-role-badge').textContent = 'Viewer Standby';
+            document.getElementById('host-quick-actions').classList.add('hidden');
+            document.getElementById('host-media-controller').classList.add('hidden');
+            document.getElementById('canvas-toolbar').classList.add('hidden');
+
+            initViewerPeer(codeInput);
+            subscribeToRoom(codeInput);
+            showToast(`Connecting to Room ${codeInput}...`);
+            refreshIcons();
+        };
+
+        // 7. FIREBASE MULTI-ROOM PERSISTENCE & SYNC
+        async function registerHostRoom() {
             if (!db || !currentUser) return;
             try {
-                const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'cast_rooms', activeRoomCode);
-                await updateDoc(roomRef, {
-                    snapshotData: {
-                        dataUrl: dataUrl,
-                        senderUid: currentUser.uid,
-                        timestamp: Date.now()
-                    }
+                const ref = doc(db, 'artifacts', appId, 'public', 'data', 'cast_rooms', roomCode);
+                await setDoc(ref, {
+                    roomCode,
+                    hostUid: currentUser.uid,
+                    hostPeerId: myPeerId,
+                    viewerCount: 1,
+                    activeCastType: 'idle',
+                    createdAt: Date.now(),
+                    updatedAt: Date.now()
                 });
-                showToast('Screen Snapshot beamed to partner!', 'ph-fill ph-aperture text-ios-cyan');
-            } catch (e) {
-                console.error('Snapshot broadcast error:', e);
-            }
+            } catch(e) {}
         }
 
-        function displaySharedSnapshot(dataUrl, caption) {
-            switchStageMode('webrtc');
-            const overlay = document.getElementById('shared-image-overlay');
-            const img = document.getElementById('shared-image-view');
-            const cap = document.getElementById('shared-image-caption');
-            img.src = dataUrl;
-            cap.textContent = caption;
-            overlay.classList.remove('hidden');
-            overlay.classList.add('flex');
+        function subscribeToRoom(code) {
+            if (!db) return;
+            if (roomDocUnsub) roomDocUnsub();
+            if (chatColUnsub) chatColUnsub();
+
+            const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'cast_rooms', code);
+            roomDocUnsub = onSnapshot(roomRef, (snap) => {
+                if (!snap.exists()) return;
+                const d = snap.data();
+                if (d.viewerCount) {
+                    document.getElementById('island-viewer-count').textContent = d.viewerCount;
+                    document.getElementById('viewers-count-badge').textContent = `${d.viewerCount} Watching`;
+                    document.getElementById('drawer-audience-count').textContent = `${d.viewerCount - 1} Viewers Connected`;
+                }
+                if (d.lastReaction && d.lastReaction.timestamp > lastReactionTime) {
+                    lastReactionTime = d.lastReaction.timestamp;
+                    if (d.lastReaction.senderUid !== (currentUser ? currentUser.uid : '')) {
+                        spawnFloatingEmoji(d.lastReaction.emoji);
+                    }
+                }
+            }, (err) => console.warn(err));
+
+            const chatRef = collection(db, 'artifacts', appId, 'public', 'data', `chat_${code}`);
+            chatColUnsub = onSnapshot(chatRef, (snap) => {
+                const msgs = [];
+                snap.forEach(docSnap => msgs.push(docSnap.data()));
+                msgs.sort((a,b) => (a.timestamp || 0) - (b.timestamp || 0));
+                
+                const container = document.getElementById('chat-messages-container');
+                container.innerHTML = '';
+                msgs.forEach(m => {
+                    const isMe = currentUser && m.senderUid === currentUser.uid;
+                    renderChatMessage(isMe ? 'You' : 'Viewer', m.text, isMe);
+                });
+            }, (err) => console.warn(err));
         }
 
-        window.closeSharedImage = function() {
-            const overlay = document.getElementById('shared-image-overlay');
-            overlay.classList.add('hidden');
-            overlay.classList.remove('flex');
-        };
-
-        // ==========================================
-        // 7. LIVE CHAT, EMOJI REACTIONS & UTILITIES
-        // ==========================================
-        window.sendReaction = async function(emoji) {
+        // 8. INTERACTIVE FEATURES: CHAT & EMOJIS
+        window.triggerBroadcastEmoji = async function(emoji) {
             spawnFloatingEmoji(emoji);
-            if (!db || !currentUser) return;
-            try {
-                const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'cast_rooms', activeRoomCode);
-                await updateDoc(roomRef, {
-                    lastReaction: {
-                        emoji: emoji,
-                        senderUid: currentUser.uid,
-                        timestamp: Date.now()
-                    }
-                });
-            } catch (e) {}
+            if (myRole === 'host') {
+                broadcastToAllViewers({ type: 'emoji', emoji: emoji });
+            } else if (myPeer) {
+                // Viewer sends to host
+                const hostPeerId = `icasthub-${roomCode}`;
+                const conn = viewerConnections.get(hostPeerId) || myPeer.connect(hostPeerId);
+                if (conn && conn.open) conn.send({ type: 'emoji', emoji: emoji });
+            }
+
+            if (db && currentUser) {
+                try {
+                    const ref = doc(db, 'artifacts', appId, 'public', 'data', 'cast_rooms', roomCode);
+                    await updateDoc(ref, {
+                        lastReaction: { emoji, senderUid: currentUser.uid, timestamp: Date.now() }
+                    });
+                } catch(e) {}
+            }
         };
 
         function spawnFloatingEmoji(emoji) {
-            const container = document.getElementById('emoji-stage-overlay');
+            const container = document.getElementById('flying-emoji-overlay');
             const el = document.createElement('div');
-            el.className = 'floating-emoji';
+            el.className = 'flying-emoji';
             el.textContent = emoji;
-            el.style.left = `${Math.floor(15 + Math.random() * 70)}%`;
+            el.style.left = `${Math.floor(12 + Math.random() * 76)}%`;
             container.appendChild(el);
-            setTimeout(() => el.remove(), 2800);
+            setTimeout(() => el.remove(), 3000);
         }
 
-        window.sendChatMessage = async function(event) {
-            event.preventDefault();
-            const input = document.getElementById('chat-input');
+        window.handleSendChatMessage = async function(e) {
+            e.preventDefault();
+            const input = document.getElementById('chat-text-input');
             const text = input.value.trim();
             if (!text) return;
             input.value = '';
 
-            if (!db || !currentUser) {
-                // Local fallback display if offline
-                renderChatMessages([{
-                    senderUid: 'me',
-                    text: text,
-                    timestamp: Date.now()
-                }]);
-                return;
-            }
+            const senderLabel = myRole === 'host' ? 'Host' : 'Viewer';
 
-            try {
-                const chatCol = collection(db, 'artifacts', appId, 'public', 'data', `cast_chat_${activeRoomCode}`);
-                await addDoc(chatCol, {
-                    senderUid: currentUser.uid,
-                    senderCode: myRoomCode,
-                    text: text,
-                    timestamp: Date.now()
-                });
-            } catch (e) {
-                console.error('Send chat error:', e);
+            if (db && currentUser) {
+                try {
+                    const chatRef = collection(db, 'artifacts', appId, 'public', 'data', `chat_${roomCode}`);
+                    await addDoc(chatRef, {
+                        senderUid: currentUser.uid,
+                        text: text,
+                        role: myRole,
+                        timestamp: Date.now()
+                    });
+                } catch(err) {
+                    renderChatMessage('You', text, true);
+                }
+            } else {
+                renderChatMessage('You', text, true);
+                if (myRole === 'host') {
+                    broadcastToAllViewers({ type: 'chat', sender: 'Host', text: text });
+                }
             }
         };
 
-        function renderChatMessages(messages) {
-            const container = document.getElementById('chat-messages');
-            if (!messages.length) return;
-            container.innerHTML = '';
+        function renderChatMessage(sender, text, isMe) {
+            const container = document.getElementById('chat-messages-container');
+            const wrap = document.createElement('div');
+            wrap.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'}`;
 
-            messages.slice(-40).forEach((msg) => {
-                const isMe = currentUser && msg.senderUid === currentUser.uid;
-                const wrapper = document.createElement('div');
-                wrapper.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'}`;
+            const label = document.createElement('span');
+            label.className = 'text-[9px] text-white/40 mb-0.5 px-1';
+            label.textContent = sender;
 
-                const bubble = document.createElement('div');
-                bubble.className = isMe
-                    ? 'bg-ios-blue text-white px-3.5 py-2 rounded-2xl rounded-br-sm max-w-[85%] shadow-sm break-words'
-                    : 'bg-white/10 border border-white/10 text-white/95 px-3.5 py-2 rounded-2xl rounded-bl-sm max-w-[85%] break-words';
-                bubble.textContent = msg.text;
+            const bubble = document.createElement('div');
+            bubble.className = isMe 
+                ? 'bg-ios-blue text-white px-3 py-1.5 rounded-2xl rounded-br-sm max-w-[85%] break-words shadow-sm'
+                : 'bg-white/10 border border-white/15 text-white/90 px-3 py-1.5 rounded-2xl rounded-bl-sm max-w-[85%] break-words shadow-sm';
+            bubble.textContent = text;
 
-                wrapper.appendChild(bubble);
-                container.appendChild(wrapper);
-            });
-
+            wrap.appendChild(label);
+            wrap.appendChild(bubble);
+            container.appendChild(wrap);
             container.scrollTop = container.scrollHeight;
         }
 
-        // Copy Room Code using iframe-safe execCommand
-        window.copyRoomCode = function() {
-            const tempInput = document.createElement('input');
-            tempInput.value = myRoomCode;
-            document.body.appendChild(tempInput);
-            tempInput.select();
+        // 9. DOCK & ACTION HELPERS
+        window.copyHostRoomCode = function() {
+            const el = document.createElement('input');
+            el.value = roomCode;
+            document.body.appendChild(el);
+            el.select();
             document.execCommand('copy');
-            document.body.removeChild(tempInput);
-            showToast(`Room Code ${myRoomCode} copied to clipboard!`, 'ph-fill ph-copy text-ios-cyan');
+            document.body.removeChild(el);
+            showToast(`Broadcast Code ${roomCode} copied! Send to viewers.`);
         };
 
-        // Fullscreen & Picture-in-Picture
-        window.toggleFullscreen = function() {
-            const stage = document.getElementById('stage-container');
+        window.toggleAudioMute = function() {
+            isAudioMuted = !isAudioMuted;
+            if (localStream) {
+                localStream.getAudioTracks().forEach(t => t.enabled = !isAudioMuted);
+            }
+            const btn = document.getElementById('dock-btn-mic');
+            btn.innerHTML = isAudioMuted 
+                ? '<i data-lucide="mic-off" class="w-5 h-5 text-ios-red"></i>'
+                : '<i data-lucide="mic" class="w-5 h-5 text-ios-orange"></i>';
+            showToast(isAudioMuted ? 'Microphone Muted' : 'Microphone Live');
+            refreshIcons();
+        };
+
+        window.toggleStageFullscreen = function() {
+            const el = document.getElementById('main-stage-container');
             if (!document.fullscreenElement) {
-                if (stage.requestFullscreen) stage.requestFullscreen();
-                else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+                if (el.requestFullscreen) el.requestFullscreen();
             } else {
                 if (document.exitFullscreen) document.exitFullscreen();
             }
         };
 
-        window.togglePiP = async function() {
-            const remoteVid = document.getElementById('remote-video');
-            const syncedVid = document.getElementById('synced-video-player');
-            const targetVideo = (!remoteVid.classList.contains('hidden') && remoteVid.srcObject) ? remoteVid : syncedVid;
-
+        window.togglePictureInPicture = async function() {
+            const vid = document.getElementById('broadcast-video-feed');
             try {
-                if (document.pictureInPictureElement) {
-                    await document.exitPictureInPicture();
-                } else if (targetVideo && targetVideo.requestPictureInPicture) {
-                    await targetVideo.requestPictureInPicture();
-                } else {
-                    showToast('Start a video or stream first to enter Picture-in-Picture', 'ph-fill ph-info text-ios-orange');
-                }
-            } catch (e) {
-                showToast('Picture-in-Picture not available on this video', 'ph-fill ph-warning text-ios-orange');
-            }
+                if (document.pictureInPictureElement) await document.exitPictureInPicture();
+                else if (vid && vid.requestPictureInPicture) await vid.requestPictureInPicture();
+            } catch(e) {}
         };
 
-        // Android Guide Modal
-        window.openAndroidModal = function() {
-            const modal = document.getElementById('android-modal');
+        window.openAndroidHelperModal = function() {
+            const modal = document.getElementById('android-helper-modal');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
+            refreshIcons();
         };
 
-        window.closeAndroidModal = function() {
-            const modal = document.getElementById('android-modal');
+        window.closeAndroidHelperModal = function() {
+            const modal = document.getElementById('android-helper-modal');
             modal.classList.add('hidden');
             modal.classList.remove('flex');
         };
 
-        // Start App on Load
-        window.addEventListener('DOMContentLoaded', initApp);
+        window.addEventListener('DOMContentLoaded', () => {
+            initApp();
+        });
     </script>
 </body>
 </html>
